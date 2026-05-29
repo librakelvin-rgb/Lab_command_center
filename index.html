@@ -254,6 +254,16 @@ select{appearance:none;cursor:pointer}
   transition:background var(--transition-interactive)}
 .hamburger:hover{background:var(--color-surface-dynamic)}
 
+/* === SYNC SECTION === */
+.sidebar-sync{padding:var(--space-2) var(--space-3) var(--space-3);border-top:1px solid var(--color-divider)}
+.sync-connect-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:var(--space-2);
+  padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);font-size:var(--text-xs);font-weight:500;
+  color:var(--color-text-muted);border:1px dashed var(--color-border);cursor:pointer;background:none;
+  transition:background var(--transition-interactive),color var(--transition-interactive)}
+.sync-connect-btn:hover{background:var(--color-surface-dynamic);color:var(--color-text)}
+.sync-connected-row{display:flex;align-items:center;gap:var(--space-2)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--color-success);flex-shrink:0;margin-top:1px}
+
 /* === MOBILE BOTTOM NAV === */
 .mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:64px;
   background:var(--color-surface);border-top:1px solid var(--color-border);
@@ -404,6 +414,20 @@ select{appearance:none;cursor:pointer}
       <i data-lucide="calendar-days" class="nav-icon"></i> Calendar
     </div>
   </nav>
+
+  <div class="sidebar-sync">
+    <button class="sync-connect-btn" id="sync-connect-btn" onclick="doSignIn()">
+      <i data-lucide="cloud" style="width:14px;height:14px"></i> Connect Google
+    </button>
+    <div class="sync-connected-row" id="sync-connected-row" style="display:none">
+      <div class="sync-dot"></div>
+      <div style="min-width:0;flex:1">
+        <div style="font-size:10px;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sync-email">Connected</div>
+        <div style="font-size:10px;color:var(--color-text-faint)" id="sync-status"></div>
+      </div>
+      <button onclick="doSignOut()" style="font-size:10px;color:var(--color-text-faint);background:none;border:none;cursor:pointer;flex-shrink:0" title="Sign out">✕</button>
+    </div>
+  </div>
 
   <div class="sidebar-footer">
     <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
@@ -692,7 +716,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-29.3';
+const BUILD = '2026-05-29.4';
 
 // === STATE ===
 let tasks = [
@@ -794,13 +818,13 @@ function renderAllTasks(){
   lucide.createIcons();
 }
 
-function toggleTask(id){const t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;renderAll();}}
-function deleteTask(id){tasks=tasks.filter(x=>x.id!==id);renderAll();}
+function toggleTask(id){const t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;renderAll();scheduleDriveSave();}}
+function deleteTask(id){tasks=tasks.filter(x=>x.id!==id);renderAll();scheduleDriveSave();}
 function addTask(){
   const inp=document.getElementById('task-input');const proj=document.getElementById('task-project');
   if(!inp.value.trim())return;
   tasks.unshift({id:Date.now(),label:inp.value.trim(),project:proj.value,done:false,date:'Today'});
-  inp.value='';renderAll();
+  inp.value='';renderAll();scheduleDriveSave();
 }
 
 function renderProjects(){
@@ -838,7 +862,7 @@ function addIdea(){
   const inp=document.getElementById('idea-input');const stage=document.getElementById('idea-stage');
   if(!inp.value.trim())return;
   ideas.unshift({id:Date.now(),title:inp.value.trim(),desc:'',stage:stage.value});
-  inp.value='';renderIdeas();
+  inp.value='';renderIdeas();scheduleDriveSave();
 }
 
 function renderLogs(){
@@ -863,7 +887,7 @@ function addLog(){
   logs.push({id:Date.now(),title,body,project,date:new Date()});
   document.getElementById('log-title').value='';
   document.getElementById('log-body').value='';
-  renderLogs();
+  renderLogs();scheduleDriveSave();
 }
 
 function renderLinks(){
@@ -890,7 +914,7 @@ function renderStreak(){
 function markStreakToday(){
   streakCount++;
   streakDays[29]=1;
-  renderStreak();
+  renderStreak();scheduleDriveSave();
   const btn=event.target.closest('button');
   const orig=btn.innerHTML;
   btn.innerHTML='<i data-lucide="check" style="width:14px;height:14px"></i> Logged!';
@@ -914,6 +938,7 @@ function addRevenue(){
   document.getElementById('rev-source').value='';
   document.getElementById('rev-amount').value='';
   document.getElementById('rev-note').value='';
+  scheduleDriveSave();
 }
 
 // Utils
@@ -952,19 +977,23 @@ window.addEventListener('DOMContentLoaded',()=>{
 
 var gisClient = null;
 var calToken = null;
+var driveFileId = localStorage.getItem('scc_driveFileId') || null;
+var driveSaveTimer = null;
 
 function doSignIn() {
   if (!gisClient) {
-    // init on first click
     gisClient = google.accounts.oauth2.initTokenClient({
       client_id: '1046865505617-ejfu6nl5lr9donhsnulbbc75usdcjjf7.apps.googleusercontent.com',
-      scope: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email',
+      scope: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
       callback: function(resp) {
         if (resp.error) { alert('Sign in error: ' + resp.error); return; }
         calToken = resp.access_token;
+        document.getElementById('sync-connect-btn').style.display = 'none';
+        document.getElementById('sync-connected-row').style.display = 'flex';
         document.getElementById('signin-section').style.display = 'none';
         document.getElementById('connected-section').style.display = '';
         document.getElementById('btn-refresh').style.display = '';
+        loadDriveData();
         loadCalendarData();
       }
     });
@@ -972,10 +1001,14 @@ function doSignIn() {
   gisClient.requestAccessToken({prompt: ''});
 }
 
-function signOutCal() {
+function doSignOut() {
   if (calToken) google.accounts.oauth2.revoke(calToken, function(){});
   calToken = null;
   gisClient = null;
+  document.getElementById('sync-connect-btn').style.display = '';
+  document.getElementById('sync-connected-row').style.display = 'none';
+  document.getElementById('sync-email').textContent = 'Connected';
+  document.getElementById('sync-status').textContent = '';
   document.getElementById('signin-section').style.display = '';
   document.getElementById('connected-section').style.display = 'none';
   document.getElementById('btn-refresh').style.display = 'none';
@@ -984,6 +1017,88 @@ function signOutCal() {
   document.getElementById('next-banner').style.display = 'none';
   document.getElementById('cal-tags').innerHTML = '';
   document.getElementById('cal-email').textContent = 'Connected';
+}
+
+// === DRIVE SYNC ===
+function getStateSnapshot() {
+  return JSON.stringify({v:1, tasks, ideas, logs, revenues, streakDays, streakCount});
+}
+
+function applyStateSnapshot(data) {
+  if (Array.isArray(data.tasks)) tasks = data.tasks;
+  if (Array.isArray(data.ideas)) ideas = data.ideas;
+  if (Array.isArray(data.logs)) logs = data.logs.map(function(l){ return Object.assign({},l,{date:new Date(l.date)}); });
+  if (Array.isArray(data.revenues)) revenues = data.revenues.map(function(r){ return Object.assign({},r,{date:new Date(r.date)}); });
+  if (Array.isArray(data.streakDays)) streakDays = data.streakDays;
+  if (typeof data.streakCount === 'number') streakCount = data.streakCount;
+  renderAll();
+}
+
+function setSyncStatus(msg) {
+  var el = document.getElementById('sync-status');
+  if (el) el.textContent = msg;
+}
+
+async function loadDriveData() {
+  setSyncStatus('Syncing...');
+  try {
+    if (!driveFileId) {
+      var search = await driveFetch('GET','https://www.googleapis.com/drive/v3/files?q=name%3D%27studio-command-center-data.json%27+and+trashed%3Dfalse&fields=files(id)');
+      if (search.files && search.files.length > 0) {
+        driveFileId = search.files[0].id;
+        localStorage.setItem('scc_driveFileId', driveFileId);
+      }
+    }
+    if (driveFileId) {
+      var res = await fetch('https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media',
+        {headers:{Authorization:'Bearer '+calToken}});
+      if (!res.ok) { driveFileId = null; localStorage.removeItem('scc_driveFileId'); await saveDriveNow(); return; }
+      var data = await res.json();
+      applyStateSnapshot(data);
+      setSyncStatus('Synced ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+    } else {
+      await saveDriveNow();
+    }
+  } catch(e) {
+    setSyncStatus('Sync error');
+    console.error('Drive load:', e);
+  }
+}
+
+async function saveDriveNow() {
+  if (!calToken) return;
+  setSyncStatus('Saving...');
+  try {
+    var content = getStateSnapshot();
+    var boundary = 'scc_bnd_42';
+    var meta = JSON.stringify({name:'studio-command-center-data.json',mimeType:'application/json'});
+    var body = '--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+meta+
+               '\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+content+
+               '\r\n--'+boundary+'--';
+    var url = driveFileId
+      ? 'https://www.googleapis.com/upload/drive/v3/files/'+driveFileId+'?uploadType=multipart'
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    var method = driveFileId ? 'PATCH' : 'POST';
+    var res = await fetch(url,{method,headers:{Authorization:'Bearer '+calToken,'Content-Type':'multipart/related; boundary='+boundary},body});
+    if (!res.ok) throw new Error(res.status);
+    var result = await res.json();
+    if (!driveFileId) { driveFileId = result.id; localStorage.setItem('scc_driveFileId', driveFileId); }
+    setSyncStatus('Saved ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
+  } catch(e) {
+    setSyncStatus('Save failed');
+    console.error('Drive save:', e);
+  }
+}
+
+function scheduleDriveSave() {
+  clearTimeout(driveSaveTimer);
+  driveSaveTimer = setTimeout(saveDriveNow, 1500);
+}
+
+async function driveFetch(method, url) {
+  var res = await fetch(url,{method,headers:{Authorization:'Bearer '+calToken}});
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
 }
 
 async function gcalFetch(url) {
@@ -1000,6 +1115,7 @@ async function loadCalendarData() {
   try {
     var user = await gcalFetch('https://www.googleapis.com/oauth2/v3/userinfo');
     document.getElementById('cal-email').textContent = user.email || 'Connected';
+    document.getElementById('sync-email').textContent = user.email || 'Connected';
 
     var calList = await gcalFetch('https://www.googleapis.com/calendar/v3/users/me/calendarList');
     var cals = calList.items || [];
