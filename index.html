@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 /* === TOKENS === */
@@ -927,10 +928,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   updateClock();
   setInterval(updateClock,10000);
 });
-</script>
 
-<script src="https://accounts.google.com/gsi/client"></script>
-<script>
+
 var gisClient = null;
 var calToken = null;
 
@@ -1048,5 +1047,7 @@ function renderEvent(ev, showDate) {
     '<div><div class="event-name">'+(ev.summary||'(No title)')+'</div>'+
     '<div class="event-cal-tag">'+ev.calName+'</div></div></div>';
 }
+
 </script>
+
 </body>
