@@ -257,8 +257,10 @@ select{appearance:none;cursor:pointer}
   .sidebar.open{left:0}
   .mobile-overlay.open{display:block}
   .hamburger{display:flex}
-  .content{padding-bottom:calc(var(--space-6) + 64px)}
+  .content{padding-bottom:calc(var(--space-6) + 80px)}
   .mobile-bottom-nav{display:flex}
+  .welcome-heading{font-size:clamp(1.75rem,8vw,2.5rem)}
+  .sync-node-pill{bottom:calc(72px + var(--space-3))}
 }
 .hamburger{display:none;align-items:center;justify-content:center;width:32px;height:32px;
   border-radius:var(--radius-md);color:var(--color-text-muted);cursor:pointer;
@@ -276,14 +278,19 @@ select{appearance:none;cursor:pointer}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--color-success);flex-shrink:0;margin-top:1px}
 
 /* === MOBILE BOTTOM NAV === */
-.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:64px;
+.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:72px;
   background:var(--color-surface);border-top:1px solid var(--color-border);
-  z-index:20;padding:0 var(--space-2);align-items:stretch;justify-content:space-around}
+  border-radius:12px 12px 0 0;
+  z-index:20;padding:0 var(--space-3);align-items:center;justify-content:space-around}
+[data-theme="dark"] .mobile-bottom-nav{
+  background:rgba(23,31,51,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-color:rgba(255,255,255,0.1)}
 .mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;flex:1;padding:var(--space-1);border-radius:var(--radius-md);cursor:pointer;
+  gap:3px;flex:1;padding:var(--space-1) var(--space-2);border-radius:var(--radius-full);cursor:pointer;
   color:var(--color-text-faint);transition:color var(--transition-interactive),background var(--transition-interactive);
-  font-size:10px;font-weight:500;border:none;background:none;font-family:var(--font-body)}
-.mobile-nav-item.active{color:var(--color-primary)}
+  font-size:10px;font-weight:500;border:none;background:none;font-family:var(--font-mono)}
+.mobile-nav-item.active{color:var(--color-warning);background:var(--color-warning-highlight)}
+[data-theme="dark"] .mobile-nav-item.active{background:rgba(111,0,190,0.25);color:var(--color-warning)}
 .mobile-nav-item:active{background:var(--color-surface-dynamic)}
 
 /* === EMPTY STATE === */
@@ -502,7 +509,10 @@ select{appearance:none;cursor:pointer}
         <div class="welcome-banner-glow"></div>
         <div class="welcome-status">Operational Status: Active</div>
         <div class="welcome-heading">Welcome back, Architect</div>
-        <div class="welcome-sub">Your indie studio command center — build in public, ship with intent.</div>
+        <div style="display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2)">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--color-blue);flex-shrink:0" class="pulse-accent"></div>
+          <div class="welcome-sub">Your indie studio command center — build in public, ship with intent.</div>
+        </div>
       </div>
       <div class="kpi-grid">
         <div class="kpi-card">
@@ -766,7 +776,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.1';
+const BUILD = '2026-05-30.2';
 
 // === STATE ===
 let tasks = [
