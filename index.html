@@ -396,6 +396,7 @@ select{appearance:none;cursor:pointer}
   border:1px solid rgba(192,193,255,0.15);box-shadow:0 4px 24px rgba(0,0,0,0.4)}
 [data-theme="dark"] .sync-node-pill{display:flex}
 .sync-node-dot{width:8px;height:8px;border-radius:50%;background:var(--color-success);flex-shrink:0}
+@media(max-width:768px){.sync-node-pill{bottom:calc(72px + var(--space-4))}}
 
 /* === WELCOME BANNER === */
 .welcome-banner{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--color-surface) 0%,var(--color-surface-2) 100%);
@@ -777,7 +778,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.3';
+const BUILD = '2026-05-30.4';
 
 // === STATE ===
 let tasks = [
