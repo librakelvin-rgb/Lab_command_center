@@ -246,11 +246,24 @@ select{appearance:none;cursor:pointer}
   .sidebar.open{left:0}
   .mobile-overlay.open{display:block}
   .hamburger{display:flex}
+  .content{padding-bottom:calc(var(--space-6) + 64px)}
+  .mobile-bottom-nav{display:flex}
 }
 .hamburger{display:none;align-items:center;justify-content:center;width:32px;height:32px;
   border-radius:var(--radius-md);color:var(--color-text-muted);cursor:pointer;
   transition:background var(--transition-interactive)}
 .hamburger:hover{background:var(--color-surface-dynamic)}
+
+/* === MOBILE BOTTOM NAV === */
+.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:64px;
+  background:var(--color-surface);border-top:1px solid var(--color-border);
+  z-index:20;padding:0 var(--space-2);align-items:stretch;justify-content:space-around}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;flex:1;padding:var(--space-1);border-radius:var(--radius-md);cursor:pointer;
+  color:var(--color-text-faint);transition:color var(--transition-interactive),background var(--transition-interactive);
+  font-size:10px;font-weight:500;border:none;background:none;font-family:var(--font-body)}
+.mobile-nav-item.active{color:var(--color-primary)}
+.mobile-nav-item:active{background:var(--color-surface-dynamic)}
 
 /* === EMPTY STATE === */
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -735,6 +748,9 @@ function navigate(view, el) {
     dashboard:'Dashboard',projects:'Projects',tasks:'Tasks',
     revenue:'Revenue',ideas:'Ideas Board',devlog:'Dev Log',resources:'Quick Links',calendar:'Calendar'
   }[view]||view;
+  document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.remove('active'));
+  var bn=document.querySelector('.mobile-nav-item[data-view="'+view+'"]');
+  if(bn) bn.classList.add('active');
   renderAll();
   closeSidebar();
 }
@@ -1049,5 +1065,29 @@ function renderEvent(ev, showDate) {
 }
 
 </script>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+  <button class="mobile-nav-item active" data-view="dashboard" onclick="navigate('dashboard',null)">
+    <i data-lucide="layout-dashboard" style="width:20px;height:20px"></i>
+    <span>Home</span>
+  </button>
+  <button class="mobile-nav-item" data-view="tasks" onclick="navigate('tasks',null)">
+    <i data-lucide="check-square" style="width:20px;height:20px"></i>
+    <span>Tasks</span>
+  </button>
+  <button class="mobile-nav-item" data-view="projects" onclick="navigate('projects',null)">
+    <i data-lucide="folder-kanban" style="width:20px;height:20px"></i>
+    <span>Projects</span>
+  </button>
+  <button class="mobile-nav-item" data-view="calendar" onclick="navigate('calendar',null)">
+    <i data-lucide="calendar" style="width:20px;height:20px"></i>
+    <span>Calendar</span>
+  </button>
+  <button class="mobile-nav-item" onclick="openSidebar()">
+    <i data-lucide="menu" style="width:20px;height:20px"></i>
+    <span>More</span>
+  </button>
+</nav>
 
 </body>
