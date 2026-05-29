@@ -816,7 +816,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.8';
+const BUILD = '2026-05-30.9';
 
 // === STATE ===
 let tasks = [
@@ -1073,6 +1073,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   setInterval(updateClock,10000);
   document.getElementById('build-badge').textContent = 'build ' + BUILD;
   initTelemetry();
+  setTimeout(tryAutoReconnect, 800);
 });
 
 // === SYSTEM PULSE TELEMETRY ===
@@ -1172,31 +1173,49 @@ var calToken = null;
 var driveFileId = localStorage.getItem('scc_driveFileId') || null;
 var driveSaveTimer = null;
 
-function doSignIn() {
-  if (!gisClient) {
-    gisClient = google.accounts.oauth2.initTokenClient({
-      client_id: '1046865505617-ejfu6nl5lr9donhsnulbbc75usdcjjf7.apps.googleusercontent.com',
-      scope: 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file',
-      callback: function(resp) {
-        if (resp.error) { alert('Sign in error: ' + resp.error); return; }
-        calToken = resp.access_token;
-        document.getElementById('sync-connect-btn').style.display = 'none';
-        document.getElementById('sync-connected-row').style.display = 'flex';
-        document.getElementById('signin-section').style.display = 'none';
-        document.getElementById('connected-section').style.display = '';
-        document.getElementById('btn-refresh').style.display = '';
-        loadDriveData();
-        loadCalendarData();
-      }
-    });
+const GIS_CLIENT_ID = '1046865505617-ejfu6nl5lr9donhsnulbbc75usdcjjf7.apps.googleusercontent.com';
+const GIS_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/drive.file';
+
+function onGisToken(resp) {
+  if (resp.error) {
+    // silent re-auth failed — clear flag, leave connect button visible
+    if (resp.error !== 'interaction_required' && resp.error !== 'access_denied') {
+      console.warn('GIS error:', resp.error);
+    }
+    localStorage.removeItem('scc_google_connected');
+    return;
   }
+  calToken = resp.access_token;
+  localStorage.setItem('scc_google_connected', '1');
+  document.getElementById('sync-connect-btn').style.display = 'none';
+  document.getElementById('sync-connected-row').style.display = 'flex';
+  document.getElementById('signin-section').style.display = 'none';
+  document.getElementById('connected-section').style.display = '';
+  document.getElementById('btn-refresh').style.display = '';
+  loadDriveData();
+  loadCalendarData();
+}
+
+function doSignIn() {
+  gisClient = google.accounts.oauth2.initTokenClient({
+    client_id: GIS_CLIENT_ID, scope: GIS_SCOPE, callback: onGisToken
+  });
   gisClient.requestAccessToken({prompt: ''});
+}
+
+function tryAutoReconnect() {
+  if (!localStorage.getItem('scc_google_connected')) return;
+  gisClient = google.accounts.oauth2.initTokenClient({
+    client_id: GIS_CLIENT_ID, scope: GIS_SCOPE, callback: onGisToken
+  });
+  gisClient.requestAccessToken({prompt: 'none'});
 }
 
 function doSignOut() {
   if (calToken) google.accounts.oauth2.revoke(calToken, function(){});
   calToken = null;
   gisClient = null;
+  localStorage.removeItem('scc_google_connected');
   document.getElementById('sync-connect-btn').style.display = '';
   document.getElementById('sync-connected-row').style.display = 'none';
   document.getElementById('sync-email').textContent = 'Connected';
