@@ -422,6 +422,7 @@ select{appearance:none;cursor:pointer}
     <span class="page-title" id="page-title">Dashboard</span>
     <div class="topbar-actions">
       <span style="font-size:var(--text-xs);color:var(--color-text-muted)" id="date-display"></span>
+      <span id="build-badge" style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);background:var(--color-surface-dynamic);padding:2px 7px;border-radius:var(--radius-full);letter-spacing:.03em"></span>
     </div>
   </header>
 
@@ -691,6 +692,8 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
+const BUILD = '2026-05-29.3';
+
 // === STATE ===
 let tasks = [
   {id:1,label:'Add 5 more levels to Taxi Kids',project:'taxi',done:false,date:'Today'},
@@ -943,6 +946,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   renderAll();
   updateClock();
   setInterval(updateClock,10000);
+  document.getElementById('build-badge').textContent = 'build ' + BUILD;
 });
 
 
