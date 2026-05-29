@@ -539,6 +539,44 @@ select{appearance:none;cursor:pointer}
         </div>
       </div>
 
+      <!-- SYSTEM PULSE -->
+      <div class="card" style="margin-bottom:var(--space-6)">
+        <div class="card-header">
+          <div>
+            <div class="card-title">System Pulse</div>
+            <div class="card-subtitle">Live browser telemetry</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-2)">
+            <div style="width:7px;height:7px;border-radius:50%;background:var(--color-blue)" class="pulse-accent"></div>
+            <span style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint)">LIVE</span>
+          </div>
+        </div>
+        <div class="kpi-grid" style="margin-bottom:0">
+          <div class="kpi-card">
+            <div class="kpi-label">CPU Activity</div>
+            <div class="kpi-value" id="tel-cpu" style="color:var(--color-primary)">—</div>
+            <div class="kpi-meta" id="tel-cpu-bar" style="margin-top:var(--space-2);height:4px;background:var(--color-surface-dynamic);border-radius:var(--radius-full);overflow:hidden">
+              <div id="tel-cpu-fill" style="height:100%;background:var(--color-primary);border-radius:var(--radius-full);width:0%;transition:width .6s ease"></div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">JS Memory</div>
+            <div class="kpi-value" id="tel-mem" style="color:var(--color-blue)">—</div>
+            <div class="kpi-meta" id="tel-mem-sub">heap used</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Session Up</div>
+            <div class="kpi-value" id="tel-uptime" style="color:var(--color-warning)">—</div>
+            <div class="kpi-meta">since page load</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">CPU Cores</div>
+            <div class="kpi-value" id="tel-cores" style="color:var(--color-success)">—</div>
+            <div class="kpi-meta">hardware threads</div>
+          </div>
+        </div>
+      </div>
+
       <div class="two-col">
         <div class="card">
           <div class="card-header">
@@ -778,7 +816,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.4';
+const BUILD = '2026-05-30.5';
 
 // === STATE ===
 let tasks = [
@@ -1034,7 +1072,55 @@ window.addEventListener('DOMContentLoaded',()=>{
   updateClock();
   setInterval(updateClock,10000);
   document.getElementById('build-badge').textContent = 'build ' + BUILD;
+  initTelemetry();
 });
+
+// === SYSTEM PULSE TELEMETRY ===
+var _pageLoadTime = Date.now();
+var _cpuEst = 0;
+var _lastTimerFire = Date.now();
+
+function initTelemetry() {
+  // CPU activity: measure timer drift — if JS is busy, setTimeout fires late
+  setInterval(function() {
+    var now = Date.now();
+    var drift = Math.max(0, (now - _lastTimerFire) - 500);
+    _cpuEst = Math.min(99, Math.round(drift / 5));
+    _lastTimerFire = now;
+    renderTelemetry();
+  }, 500);
+  // Show core count immediately
+  var coresEl = document.getElementById('tel-cores');
+  if (coresEl) coresEl.textContent = (navigator.hardwareConcurrency || '?') + '';
+}
+
+function renderTelemetry() {
+  var cpuEl = document.getElementById('tel-cpu');
+  var cpuFill = document.getElementById('tel-cpu-fill');
+  var memEl = document.getElementById('tel-mem');
+  var memSub = document.getElementById('tel-mem-sub');
+  var uptimeEl = document.getElementById('tel-uptime');
+  if (!cpuEl) return;
+
+  cpuEl.textContent = _cpuEst + '%';
+  if (cpuFill) cpuFill.style.width = Math.max(2, _cpuEst) + '%';
+
+  if (performance.memory) {
+    var usedMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+    var totalMB = (performance.memory.jsHeapSizeLimit / 1048576).toFixed(0);
+    memEl.textContent = usedMB + ' MB';
+    if (memSub) memSub.textContent = 'of ' + totalMB + ' MB limit';
+  } else {
+    memEl.textContent = 'N/A';
+    if (memSub) memSub.textContent = 'Chrome only';
+  }
+
+  var elapsed = Math.floor((Date.now() - _pageLoadTime) / 1000);
+  var h = Math.floor(elapsed / 3600);
+  var m = Math.floor((elapsed % 3600) / 60);
+  var s = elapsed % 60;
+  uptimeEl.textContent = h > 0 ? h + 'h ' + m + 'm' : m > 0 ? m + 'm ' + s + 's' : s + 's';
+}
 
 
 var gisClient = null;
