@@ -292,6 +292,7 @@ select{appearance:none;cursor:pointer}
 .mobile-nav-item.active{color:var(--color-warning);background:var(--color-warning-highlight)}
 [data-theme="dark"] .mobile-nav-item.active{background:rgba(111,0,190,0.25);color:var(--color-warning)}
 .mobile-nav-item:active{background:var(--color-surface-dynamic)}
+@media(max-width:768px){.mobile-bottom-nav{display:flex}}
 
 /* === EMPTY STATE === */
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -776,7 +777,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.2';
+const BUILD = '2026-05-30.3';
 
 // === STATE ===
 let tasks = [
