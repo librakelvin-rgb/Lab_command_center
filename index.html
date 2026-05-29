@@ -816,7 +816,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.6';
+const BUILD = '2026-05-30.7';
 
 // === STATE ===
 let tasks = [
@@ -1080,6 +1080,7 @@ var _pageLoadTime = Date.now();
 var _cpuEst = 0;
 var _lastTimerFire = Date.now();
 var _battery = null;
+var _pingMs = null;
 
 function initTelemetry() {
   // CPU activity: measure timer drift
@@ -1100,10 +1101,20 @@ function initTelemetry() {
     });
   }
 
-  // Network change events
-  if (navigator.connection) {
-    navigator.connection.addEventListener('change', renderTelemetry);
-  }
+  // Ping measurement every 8 seconds
+  measurePing();
+  setInterval(measurePing, 8000);
+}
+
+async function measurePing() {
+  if (!navigator.onLine) { _pingMs = null; renderTelemetry(); return; }
+  try {
+    var url = location.href.split('?')[0] + '?_p=' + Date.now();
+    var start = performance.now();
+    await fetch(url, {method:'HEAD', cache:'no-store'});
+    _pingMs = Math.round(performance.now() - start);
+  } catch(e) { _pingMs = null; }
+  renderTelemetry();
 }
 
 function renderTelemetry() {
@@ -1119,15 +1130,22 @@ function renderTelemetry() {
   cpuEl.textContent = _cpuEst + '%';
   if (cpuFill) cpuFill.style.width = Math.max(2, _cpuEst) + '%';
 
-  // Network
-  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-  if (conn && netEl) {
-    var dl = conn.downlink;
-    netEl.textContent = dl >= 1 ? dl.toFixed(0) + ' Mb/s' : (dl * 1000).toFixed(0) + ' Kb/s';
-    if (netSub) netSub.textContent = (conn.effectiveType || '').toUpperCase() + (conn.rtt ? ' · ' + conn.rtt + 'ms' : '');
-  } else if (netEl) {
-    netEl.textContent = 'N/A';
-    if (netSub) netSub.textContent = 'Chrome/Edge only';
+  // Network — real ping + connection type
+  if (netEl) {
+    if (!navigator.onLine) {
+      netEl.textContent = 'Offline';
+      if (netSub) netSub.textContent = 'no connection';
+    } else if (_pingMs !== null) {
+      netEl.textContent = _pingMs + ' ms';
+      var conn = navigator.connection;
+      var ctype = conn && conn.type && conn.type !== 'unknown' && conn.type !== 'other'
+        ? (conn.type === 'wifi' ? 'WiFi' : conn.type.charAt(0).toUpperCase() + conn.type.slice(1))
+        : '';
+      if (netSub) netSub.textContent = ctype || (conn && conn.effectiveType ? conn.effectiveType.toUpperCase() : 'latency');
+    } else {
+      netEl.textContent = '…';
+      if (netSub) netSub.textContent = 'measuring';
+    }
   }
 
   // Battery
