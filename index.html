@@ -560,9 +560,9 @@ select{appearance:none;cursor:pointer}
             </div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">JS Memory</div>
-            <div class="kpi-value" id="tel-mem" style="color:var(--color-blue)">—</div>
-            <div class="kpi-meta" id="tel-mem-sub">heap used</div>
+            <div class="kpi-label">Network</div>
+            <div class="kpi-value" id="tel-net" style="color:var(--color-blue)">—</div>
+            <div class="kpi-meta" id="tel-net-sub">connection speed</div>
           </div>
           <div class="kpi-card">
             <div class="kpi-label">Session Up</div>
@@ -570,9 +570,9 @@ select{appearance:none;cursor:pointer}
             <div class="kpi-meta">since page load</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">CPU Cores</div>
-            <div class="kpi-value" id="tel-cores" style="color:var(--color-success)">—</div>
-            <div class="kpi-meta">hardware threads</div>
+            <div class="kpi-label">Battery</div>
+            <div class="kpi-value" id="tel-battery" style="color:var(--color-success)">—</div>
+            <div class="kpi-meta" id="tel-battery-sub">charge status</div>
           </div>
         </div>
       </div>
@@ -816,7 +816,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.5';
+const BUILD = '2026-05-30.6';
 
 // === STATE ===
 let tasks = [
@@ -1079,9 +1079,10 @@ window.addEventListener('DOMContentLoaded',()=>{
 var _pageLoadTime = Date.now();
 var _cpuEst = 0;
 var _lastTimerFire = Date.now();
+var _battery = null;
 
 function initTelemetry() {
-  // CPU activity: measure timer drift — if JS is busy, setTimeout fires late
+  // CPU activity: measure timer drift
   setInterval(function() {
     var now = Date.now();
     var drift = Math.max(0, (now - _lastTimerFire) - 500);
@@ -1089,30 +1090,55 @@ function initTelemetry() {
     _lastTimerFire = now;
     renderTelemetry();
   }, 500);
-  // Show core count immediately
-  var coresEl = document.getElementById('tel-cores');
-  if (coresEl) coresEl.textContent = (navigator.hardwareConcurrency || '?') + '';
+
+  // Battery
+  if (navigator.getBattery) {
+    navigator.getBattery().then(function(bat) {
+      _battery = bat;
+      bat.addEventListener('chargingchange', renderTelemetry);
+      bat.addEventListener('levelchange', renderTelemetry);
+    });
+  }
+
+  // Network change events
+  if (navigator.connection) {
+    navigator.connection.addEventListener('change', renderTelemetry);
+  }
 }
 
 function renderTelemetry() {
   var cpuEl = document.getElementById('tel-cpu');
   var cpuFill = document.getElementById('tel-cpu-fill');
-  var memEl = document.getElementById('tel-mem');
-  var memSub = document.getElementById('tel-mem-sub');
+  var netEl = document.getElementById('tel-net');
+  var netSub = document.getElementById('tel-net-sub');
   var uptimeEl = document.getElementById('tel-uptime');
+  var batEl = document.getElementById('tel-battery');
+  var batSub = document.getElementById('tel-battery-sub');
   if (!cpuEl) return;
 
   cpuEl.textContent = _cpuEst + '%';
   if (cpuFill) cpuFill.style.width = Math.max(2, _cpuEst) + '%';
 
-  if (performance.memory) {
-    var usedMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
-    var totalMB = (performance.memory.jsHeapSizeLimit / 1048576).toFixed(0);
-    memEl.textContent = usedMB + ' MB';
-    if (memSub) memSub.textContent = 'of ' + totalMB + ' MB limit';
-  } else {
-    memEl.textContent = 'N/A';
-    if (memSub) memSub.textContent = 'Chrome only';
+  // Network
+  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (conn && netEl) {
+    var dl = conn.downlink;
+    netEl.textContent = dl >= 1 ? dl.toFixed(0) + ' Mb/s' : (dl * 1000).toFixed(0) + ' Kb/s';
+    if (netSub) netSub.textContent = (conn.effectiveType || '').toUpperCase() + (conn.rtt ? ' · ' + conn.rtt + 'ms' : '');
+  } else if (netEl) {
+    netEl.textContent = 'N/A';
+    if (netSub) netSub.textContent = 'Chrome/Edge only';
+  }
+
+  // Battery
+  if (_battery && batEl) {
+    var pct = Math.round(_battery.level * 100);
+    batEl.textContent = pct + '%';
+    batEl.style.color = pct <= 20 ? 'var(--color-error)' : pct <= 50 ? 'var(--color-warning)' : 'var(--color-success)';
+    if (batSub) batSub.textContent = _battery.charging ? '⚡ Charging' : (pct <= 20 ? '⚠ Low' : 'On battery');
+  } else if (batEl && !navigator.getBattery) {
+    batEl.textContent = 'N/A';
+    if (batSub) batSub.textContent = 'not supported';
   }
 
   var elapsed = Math.floor((Date.now() - _pageLoadTime) / 1000);
