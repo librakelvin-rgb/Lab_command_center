@@ -425,6 +425,7 @@ select{appearance:none;cursor:pointer}
         <div style="font-size:10px;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sync-email">Connected</div>
         <div style="font-size:10px;color:var(--color-text-faint)" id="sync-status"></div>
       </div>
+      <button onclick="loadDriveData()" style="color:var(--color-text-faint);background:none;border:none;cursor:pointer;flex-shrink:0;padding:2px;border-radius:var(--radius-sm);display:flex;align-items:center" title="Pull latest from Drive"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i></button>
       <button onclick="doSignOut()" style="font-size:10px;color:var(--color-text-faint);background:none;border:none;cursor:pointer;flex-shrink:0" title="Sign out">✕</button>
     </div>
   </div>
@@ -716,7 +717,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-29.5';
+const BUILD = '2026-05-29.6';
 
 // === STATE ===
 let tasks = [
