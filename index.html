@@ -694,7 +694,7 @@ select{appearance:none;cursor:pointer}
             <div class="cal-status">
               <div class="cal-dot"></div>
               <span id="cal-email">Connected</span>
-              <button onclick="signOutCal()" style="margin-left:auto;font-size:10px;color:var(--color-text-faint);text-decoration:underline;cursor:pointer">Sign out</button>
+              <button onclick="doSignOut()" style="margin-left:auto;font-size:10px;color:var(--color-text-faint);text-decoration:underline;cursor:pointer">Sign out</button>
             </div>
             <div id="cal-tags" style="margin-bottom:var(--space-3)"></div>
           </div>
@@ -716,7 +716,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-29.4';
+const BUILD = '2026-05-29.5';
 
 // === STATE ===
 let tasks = [
