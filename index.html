@@ -816,7 +816,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.7';
+const BUILD = '2026-05-30.8';
 
 // === STATE ===
 let tasks = [
@@ -1068,7 +1068,7 @@ function closeSidebar(){document.getElementById('sidebar').classList.remove('ope
 // Init
 window.addEventListener('DOMContentLoaded',()=>{
   lucide.createIcons();
-  renderAll();
+  if (!loadFromLocalStorage()) renderAll();
   updateClock();
   setInterval(updateClock,10000);
   document.getElementById('build-badge').textContent = 'build ' + BUILD;
@@ -1211,6 +1211,20 @@ function doSignOut() {
   document.getElementById('cal-email').textContent = 'Connected';
 }
 
+// === LOCAL STORAGE PERSISTENCE ===
+function saveToLocalStorage() {
+  try { localStorage.setItem('scc_state', getStateSnapshot()); } catch(e) {}
+}
+
+function loadFromLocalStorage() {
+  try {
+    var raw = localStorage.getItem('scc_state');
+    if (!raw) return false;
+    applyStateSnapshot(JSON.parse(raw));
+    return true;
+  } catch(e) { return false; }
+}
+
 // === DRIVE SYNC ===
 function getStateSnapshot() {
   return JSON.stringify({v:1, tasks, ideas, logs, revenues, streakDays, streakCount});
@@ -1249,6 +1263,7 @@ async function loadDriveData() {
       if (!res.ok) { driveFileId = null; localStorage.removeItem('scc_driveFileId'); await saveDriveNow(); return; }
       var data = await res.json();
       applyStateSnapshot(data);
+      saveToLocalStorage();
       setSyncStatus('Synced ' + new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}));
     } else {
       await saveDriveNow();
@@ -1285,6 +1300,7 @@ async function saveDriveNow() {
 }
 
 function scheduleDriveSave() {
+  saveToLocalStorage();
   clearTimeout(driveSaveTimer);
   driveSaveTimer = setTimeout(saveDriveNow, 1500);
 }
