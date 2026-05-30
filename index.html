@@ -122,26 +122,21 @@ select{appearance:none;cursor:pointer}
 .view-inner{padding:var(--space-6)}
 
 /* === DASH GRID === */
-.dash-grid{display:grid;grid-template-columns:3fr 6fr 3fr;grid-template-rows:1fr auto;
-  height:calc(100dvh - 52px - 28px);gap:1px;background:var(--color-border);position:relative}
+.dash-grid{display:grid;grid-template-columns:3fr 5px 6fr 5px 3fr;grid-template-rows:1fr auto;
+  height:calc(100dvh - 52px - 28px);background:var(--color-bg)}
 
-/* === RESIZE HANDLES === */
-.resize-handle{position:absolute;z-index:200;cursor:col-resize;background:transparent;
-  transition:background 150ms}
-.resize-handle.v{top:0;width:8px;transform:translateX(-50%)}
-.resize-handle.h{left:0;right:0;height:8px;cursor:row-resize;transform:translateY(-50%)}
-.resize-handle:hover,.resize-handle.dragging{background:rgba(0,225,171,0.15)}
-.resize-handle::after{content:'';position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);background:var(--color-primary);opacity:0;
-  transition:opacity 150ms;border-radius:2px}
-.resize-handle.v::after{width:2px;height:32px}
-.resize-handle.h::after{height:2px;width:32px}
-.resize-handle:hover::after,.resize-handle.dragging::after{opacity:0.5}
-/* right-panel row handle lives inside the right section */
-.dash-right{position:relative}
-.dash-cell{background:var(--color-surface);padding:var(--space-5);overflow:hidden}
-[data-theme="dark"] .dash-cell{background:#0e1812}
-.dash-right{padding:0;display:grid;grid-template-rows:1fr 1fr;gap:1px;background:var(--color-border)}
+/* === RESIZE DIVIDERS (actual grid items) === */
+.col-divider{background:var(--color-border);cursor:col-resize;user-select:none;
+  grid-row:1;transition:background 200ms}
+[data-theme="dark"] .col-divider{background:rgba(58,74,67,0.8)}
+.col-divider:hover,.col-divider.dragging{background:var(--color-primary)!important;opacity:.5}
+.row-divider{background:var(--color-border);cursor:row-resize;user-select:none;
+  transition:background 200ms}
+[data-theme="dark"] .row-divider{background:rgba(58,74,67,0.8)}
+.row-divider:hover,.row-divider.dragging{background:var(--color-primary)!important;opacity:.5}
+.dash-cell{background:var(--color-surface);padding:var(--space-5);overflow:hidden;border:1px solid var(--color-border)}
+[data-theme="dark"] .dash-cell{background:#0e1812;border-color:rgba(58,74,67,0.5)}
+.dash-right{padding:0;display:grid;grid-template-rows:1fr 5px 1fr;grid-row:1}
 .dash-right .dash-cell{overflow-y:auto}
 .dash-bottom{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--color-border)}
 .dash-bottom-cell{background:var(--color-surface);padding:var(--space-5);overflow:hidden}
@@ -469,7 +464,7 @@ select{appearance:none;cursor:pointer}
     <div class="view active" id="view-dashboard">
       <div class="dash-grid">
 
-        <!-- LEFT: ENTITY DOSSIER -->
+        <!-- COL 1: ENTITY DOSSIER -->
         <section class="dash-cell">
           <div class="cell-header">
             <div class="cell-title"><i data-lucide="fingerprint" style="width:13px;height:13px"></i> ENTITY DOSSIER</div>
@@ -509,7 +504,10 @@ select{appearance:none;cursor:pointer}
           <div id="dossier-tasks" style="display:flex;flex-direction:column;gap:4px"></div>
         </section>
 
-        <!-- CENTER: STUDIO HUB -->
+        <!-- COL DIVIDER 1 -->
+        <div class="col-divider" id="cdiv1" title="Drag to resize"></div>
+
+        <!-- COL 3: STUDIO HUB -->
         <section class="dash-cell" style="overflow-y:auto">
           <div class="cell-header">
             <div>
@@ -585,7 +583,10 @@ select{appearance:none;cursor:pointer}
           <div class="bar-labels" id="streak-labels"></div>
         </section>
 
-        <!-- RIGHT: DEV STREAM + OPS BACKLOG -->
+        <!-- COL DIVIDER 2 -->
+        <div class="col-divider" id="cdiv2" title="Drag to resize"></div>
+
+        <!-- COL 5: DEV STREAM + OPS BACKLOG -->
         <section class="dash-right">
           <div class="dash-cell">
             <div class="cell-header">
@@ -594,6 +595,8 @@ select{appearance:none;cursor:pointer}
             </div>
             <div id="dev-stream-list" style="display:flex;flex-direction:column"></div>
           </div>
+          <!-- ROW DIVIDER -->
+          <div class="row-divider" id="rdiv1" title="Drag to resize"></div>
           <div class="dash-cell">
             <div class="cell-header">
               <div class="cell-title" style="color:var(--color-warning)"><i data-lucide="alert-triangle" style="width:13px;height:13px"></i> OPS BACKLOG</div>
@@ -857,7 +860,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.12';
+const BUILD = '2026-05-30.13';
 
 // === STATE ===
 let tasks = [
@@ -1183,7 +1186,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('build-badge').textContent = 'v' + BUILD;
   initTelemetry();
   setTimeout(tryAutoReconnect, 800);
-  setTimeout(initResizeHandles, 100);
+  initResizableGrid();
   fetchCommitInfo();
 });
 
@@ -1528,72 +1531,40 @@ function renderEvent(ev, showDate) {
 }
 
 // === RESIZABLE GRID PANELS ===
-function initResizeHandles() {
+function initResizableGrid() {
   var grid = document.getElementById('dash-grid');
   if (!grid || window.innerWidth <= 768) return;
 
   // Restore saved column widths
-  var saved = localStorage.getItem('scc_grid_cols');
-  if (saved) grid.style.gridTemplateColumns = saved;
+  var savedCols = localStorage.getItem('scc_grid_cols');
+  if (savedCols) grid.style.gridTemplateColumns = savedCols;
 
-  // Create column drag handles (between col1/2 and col2/3)
-  function makeColHandle(id) {
-    var h = document.createElement('div');
-    h.className = 'resize-handle v'; h.id = id;
-    grid.appendChild(h);
-    return h;
-  }
-  var ch1 = makeColHandle('crh1');
-  var ch2 = makeColHandle('crh2');
-
-  // Create row handle inside right panel (between dev stream / ops backlog)
-  var rightPanel = grid.querySelector('.dash-right');
-  var rh = document.createElement('div');
-  rh.className = 'resize-handle h'; rh.id = 'rrh1';
-  rightPanel.appendChild(rh);
-
-  function positionHandles() {
-    var gr = grid.getBoundingClientRect();
-    // Find the 3 main cells: first .dash-cell, second .dash-cell, .dash-right
-    var cells = grid.querySelectorAll(':scope > .dash-cell, :scope > .dash-right');
-    if (cells.length < 3) return;
-    var r0 = cells[0].getBoundingClientRect();
-    var r1 = cells[1].getBoundingClientRect();
-    var r2 = cells[2].getBoundingClientRect();
-    ch1.style.left = (r0.right - gr.left) + 'px';
-    ch1.style.top = '0'; ch1.style.height = r0.height + 'px';
-    ch2.style.left = (r1.right - gr.left) + 'px';
-    ch2.style.top = '0'; ch2.style.height = r1.height + 'px';
-    // row handle in right panel
-    var rightCells = rightPanel.querySelectorAll(':scope > .dash-cell');
-    if (rightCells.length >= 1) {
-      var rc = rightCells[0].getBoundingClientRect();
-      rh.style.top = (rc.bottom - rightPanel.getBoundingClientRect().top) + 'px';
-      rh.style.left = '0'; rh.style.right = '0';
-    }
-  }
-  positionHandles();
-  window.addEventListener('resize', positionHandles);
-
-  function startColDrag(handle, colIdx) {
-    handle.addEventListener('mousedown', function(e) {
+  // Column resize — cdiv1 (between col1 and col3), cdiv2 (between col3 and col5)
+  var colDivs = [document.getElementById('cdiv1'), document.getElementById('cdiv2')];
+  colDivs.forEach(function(div, idx) {
+    if (!div) return;
+    div.addEventListener('mousedown', function(e) {
       e.preventDefault();
       var startX = e.clientX;
-      var cols = getComputedStyle(grid).gridTemplateColumns.split(' ').map(parseFloat);
-      handle.classList.add('dragging');
-      function onMove(ev) {
-        var dx = ev.clientX - startX;
-        var c = cols.slice();
-        if (colIdx === 0) {
-          c[0] = Math.max(140, c[0] + dx); c[1] = Math.max(180, c[1] - dx);
+      // getComputedStyle returns resolved px values for grid-template-columns
+      var cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
+      var c0 = parseFloat(cols[0]);
+      var c2 = parseFloat(cols[2]);
+      var c4 = parseFloat(cols[4]);
+      div.classList.add('dragging');
+      function onMove(e) {
+        var dx = e.clientX - startX;
+        if (idx === 0) {
+          c0 = Math.max(120, parseFloat(cols[0]) + dx);
+          c2 = Math.max(160, parseFloat(cols[2]) - dx);
         } else {
-          c[1] = Math.max(180, c[1] + dx); c[2] = Math.max(140, c[2] - dx);
+          c2 = Math.max(160, parseFloat(cols[2]) + dx);
+          c4 = Math.max(120, parseFloat(cols[4]) - dx);
         }
-        grid.style.gridTemplateColumns = c.map(function(v){return v+'px';}).join(' ');
-        positionHandles();
+        grid.style.gridTemplateColumns = c0+'px 5px '+c2+'px 5px '+c4+'px';
       }
       function onUp() {
-        handle.classList.remove('dragging');
+        div.classList.remove('dragging');
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
         localStorage.setItem('scc_grid_cols', grid.style.gridTemplateColumns);
@@ -1601,40 +1572,38 @@ function initResizeHandles() {
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     });
-  }
-  startColDrag(ch1, 0);
-  startColDrag(ch2, 1);
-
-  // Row drag inside right panel
-  rh.addEventListener('mousedown', function(e) {
-    e.preventDefault();
-    var startY = e.clientY;
-    var rows = getComputedStyle(rightPanel).gridTemplateRows.split(' ').map(parseFloat);
-    if (rows.some(isNaN)) rows = [rightPanel.offsetHeight/2, rightPanel.offsetHeight/2];
-    rh.classList.add('dragging');
-    function onMove(ev) {
-      var dy = ev.clientY - startY;
-      var r0 = Math.max(80, rows[0] + dy);
-      var r1 = Math.max(80, rows[1] - dy);
-      rightPanel.style.gridTemplateRows = r0+'px '+r1+'px';
-      var rightCells = rightPanel.querySelectorAll(':scope > .dash-cell');
-      if (rightCells.length >= 1) {
-        rh.style.top = rightCells[0].getBoundingClientRect().bottom - rightPanel.getBoundingClientRect().top + 'px';
-      }
-    }
-    function onUp() {
-      rh.classList.remove('dragging');
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      localStorage.setItem('scc_right_rows', rightPanel.style.gridTemplateRows);
-    }
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
   });
 
-  // Restore right panel row split
-  var savedRR = localStorage.getItem('scc_right_rows');
-  if (savedRR) rightPanel.style.gridTemplateRows = savedRR;
+  // Row resize inside right panel
+  var rightPanel = grid.querySelector('.dash-right');
+  var rowDiv = document.getElementById('rdiv1');
+  if (rightPanel && rowDiv) {
+    var savedRows = localStorage.getItem('scc_right_rows');
+    if (savedRows) rightPanel.style.gridTemplateRows = savedRows;
+
+    rowDiv.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      var startY = e.clientY;
+      var rows = getComputedStyle(rightPanel).gridTemplateRows.split(' ');
+      var r0 = parseFloat(rows[0]);
+      var r2 = parseFloat(rows[2]);
+      rowDiv.classList.add('dragging');
+      function onMove(e) {
+        var dy = e.clientY - startY;
+        var nr0 = Math.max(80, r0 + dy);
+        var nr2 = Math.max(80, r2 - dy);
+        rightPanel.style.gridTemplateRows = nr0+'px 5px '+nr2+'px';
+      }
+      function onUp() {
+        rowDiv.classList.remove('dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        localStorage.setItem('scc_right_rows', rightPanel.style.gridTemplateRows);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
 }
 
 // === COMMIT INFO ===
