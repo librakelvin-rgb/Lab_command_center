@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 /* === TOKENS === */
@@ -23,8 +22,7 @@
   --color-warning:#964219;--color-warning-highlight:rgba(150,66,25,0.12);
   --color-error:#a12c7b;--color-error-highlight:rgba(161,44,123,0.12);
   --color-orange:#da7101;--color-blue:#006494;--color-purple:#006c50;
-  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md:0 4px 12px rgba(0,0,0,0.08);
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow-md:0 4px 12px rgba(0,0,0,0.08);
   --radius-sm:2px;--radius-md:4px;--radius-lg:4px;--radius-xl:6px;--radius-full:9999px;
   --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;
   --space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;
@@ -35,7 +33,6 @@
   --font-body:'JetBrains Mono','Courier New',monospace;
   --font-mono:'JetBrains Mono',monospace;
   --font-display:'Space Grotesk','JetBrains Mono',sans-serif;
-  --sidebar-w:240px;
 }
 [data-theme="dark"]{
   --color-bg:#0c1511;--color-surface:#141d19;--color-surface-2:#18221d;
@@ -50,10 +47,13 @@
   --color-orange:#FFB800;--color-blue:#00E0FF;--color-purple:#00e1ab;
   --shadow-sm:0 1px 4px rgba(0,0,0,0.5);--shadow-md:0 4px 24px rgba(0,0,0,0.7);
 }
+
+/* === RESET === */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
 body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);
-  color:var(--color-text);background:var(--color-bg);display:flex;overflow:hidden;height:100dvh}
+  color:var(--color-text);background:var(--color-bg);display:flex;flex-direction:column;
+  overflow:hidden;height:100dvh}
 button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
 a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%}
@@ -61,47 +61,123 @@ input,textarea,select{font:inherit;color:inherit;background:var(--color-surface-
   border:1px solid var(--color-border);border-radius:var(--radius-md);
   padding:var(--space-2) var(--space-3);width:100%;outline:none;
   transition:border-color var(--transition-interactive),box-shadow var(--transition-interactive)}
-input:focus,textarea:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px oklch(from var(--color-primary) l c h/.15)}
+input:focus,textarea:focus{border-color:var(--color-primary);box-shadow:0 0 0 2px var(--color-primary-highlight)}
 textarea{resize:vertical;min-height:80px}
 select{appearance:none;cursor:pointer}
 :focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
 
-/* === SIDEBAR === */
-.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);height:100dvh;background:var(--color-surface);
-  border-right:1px solid var(--color-border);display:flex;flex-direction:column;overflow:hidden;
-  transition:width var(--transition-interactive),min-width var(--transition-interactive);z-index:10}
-[data-theme="dark"] .sidebar{background:rgba(10,18,14,0.97);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-right-color:rgba(58,74,67,0.5)}
-.sidebar-header{padding:var(--space-4) var(--space-4) var(--space-3);border-bottom:1px solid var(--color-divider);
-  display:flex;align-items:center;gap:var(--space-3);flex-shrink:0}
-.logo-mark{width:28px;height:28px;flex-shrink:0}
-.sidebar-title{font-size:var(--text-sm);font-weight:700;color:var(--color-primary);white-space:nowrap;overflow:hidden;
-  font-family:var(--font-display)}
-.sidebar-subtitle{font-size:var(--text-xs);color:var(--color-text-faint);white-space:nowrap;overflow:hidden;margin-top:1px}
-.sidebar-nav{flex:1;overflow-y:auto;padding:var(--space-3) var(--space-2)}
-.nav-section-label{font-size:var(--text-xs);font-weight:600;color:var(--color-text-faint);
-  text-transform:uppercase;letter-spacing:.08em;padding:var(--space-3) var(--space-2) var(--space-1)}
-.nav-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);
-  border-radius:var(--radius-md);cursor:pointer;transition:background var(--transition-interactive),color var(--transition-interactive);
-  font-size:var(--text-sm);color:var(--color-text-muted);position:relative;white-space:nowrap;overflow:hidden;border-right:2px solid transparent}
-.nav-item:hover{background:var(--color-primary-highlight);color:var(--color-text)}
-.nav-item.active{background:var(--color-primary-highlight);color:var(--color-primary);font-weight:600;border-right-color:var(--color-primary)}
-.nav-item .nav-icon{flex-shrink:0;width:16px;height:16px}
-.nav-badge{margin-left:auto;background:var(--color-primary);color:#0b1326;font-size:10px;font-weight:700;
-  padding:1px 6px;border-radius:var(--radius-full);flex-shrink:0}
-.sidebar-footer{padding:var(--space-3) var(--space-4);border-top:1px solid var(--color-divider);
-  display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
-.theme-toggle{width:28px;height:28px;display:flex;align-items:center;justify-content:center;
-  border-radius:var(--radius-md);color:var(--color-text-muted);
-  transition:background var(--transition-interactive),color var(--transition-interactive)}
-.theme-toggle:hover{background:var(--color-surface-dynamic);color:var(--color-text)}
+/* === APP WRAPPER === */
+.app-wrapper{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 
-/* === MAIN === */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+/* === TOPBAR === */
 .topbar{height:52px;background:var(--color-surface);border-bottom:1px solid var(--color-border);
-  display:flex;align-items:center;padding:0 var(--space-6);gap:var(--space-4);flex-shrink:0}
-[data-theme="dark"] .topbar{background:rgba(10,18,14,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom-color:rgba(58,74,67,0.5)}
-.page-title{font-size:var(--text-lg);font-weight:700;color:var(--color-text);font-family:var(--font-display)}
-.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:var(--space-2)}
+  display:flex;align-items:center;padding:0 var(--space-4);gap:var(--space-3);flex-shrink:0;z-index:10}
+[data-theme="dark"] .topbar{background:rgba(10,18,14,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom-color:rgba(58,74,67,0.5)}
+.topbar-left{display:flex;align-items:center;gap:var(--space-3);flex-shrink:0}
+.topbar-search{position:relative;display:flex;align-items:center}
+.topbar-search input{background:var(--color-surface-offset);border:1px solid var(--color-border);
+  font-family:var(--font-mono);font-size:11px;padding:5px 10px 5px 28px;width:170px;
+  color:var(--color-text-muted);letter-spacing:.06em;text-transform:uppercase;outline:none;border-radius:var(--radius-sm)}
+.topbar-search input::placeholder{color:var(--color-text-faint)}
+.topbar-search input:focus{border-color:var(--color-primary)}
+.topbar-search-icon{position:absolute;left:8px;color:var(--color-text-faint);pointer-events:none}
+.topbar-live{display:none;align-items:center;gap:6px;font-family:var(--font-mono);
+  font-size:11px;font-weight:700;color:var(--color-success);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+[data-theme="dark"] .topbar-live{display:flex}
+.topbar-divider{width:1px;height:18px;background:var(--color-border);flex-shrink:0;margin:0 var(--space-1)}
+.topbar-right{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0;margin-left:auto}
+
+/* === TOP NAV === */
+.topnav{display:flex;align-items:center;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.topnav::-webkit-scrollbar{display:none}
+.topnav-item{padding:0 var(--space-3);font-family:var(--font-mono);font-size:11px;font-weight:500;
+  color:var(--color-text-faint);background:none;border:none;border-bottom:2px solid transparent;
+  cursor:pointer;white-space:nowrap;text-transform:uppercase;letter-spacing:.07em;
+  transition:color var(--transition-interactive),border-color var(--transition-interactive);
+  height:52px;display:flex;align-items:center;gap:4px}
+.topnav-item:hover{color:var(--color-text-muted)}
+.topnav-item.active{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+.nav-badge{background:var(--color-primary);color:#003828;font-size:9px;font-weight:700;
+  padding:1px 5px;border-radius:var(--radius-full);flex-shrink:0}
+
+/* === SYNC IN TOPBAR === */
+.sync-connect-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;
+  font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:.06em;
+  color:var(--color-text-faint);border:1px dashed var(--color-border);cursor:pointer;background:none;
+  transition:color var(--transition-interactive),border-color var(--transition-interactive)}
+.sync-connect-btn:hover{color:var(--color-primary);border-color:var(--color-primary)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--color-success);flex-shrink:0}
+.sync-connected-row{display:flex;align-items:center;gap:6px}
+.theme-toggle{width:26px;height:26px;display:flex;align-items:center;justify-content:center;
+  color:var(--color-text-faint);transition:color var(--transition-interactive)}
+.theme-toggle:hover{color:var(--color-text)}
+
+/* === CONTENT === */
+.content{flex:1;background:var(--color-bg);padding-bottom:28px;overflow:hidden}
+@media(max-width:768px){.content{overflow-y:auto;padding-bottom:calc(64px + 28px)}}
+
+/* === VIEWS === */
+.view{display:none}
+.view.active{display:block}
+.view-inner{padding:var(--space-6)}
+
+/* === DASH GRID === */
+.dash-grid{display:grid;grid-template-columns:3fr 6fr 3fr;grid-template-rows:1fr auto;
+  height:calc(100dvh - 52px - 28px);gap:1px;background:var(--color-border)}
+.dash-cell{background:var(--color-surface);padding:var(--space-5);overflow:hidden}
+[data-theme="dark"] .dash-cell{background:#0e1812}
+.dash-right{padding:0;display:grid;grid-template-rows:1fr 1fr;gap:1px;background:var(--color-border)}
+.dash-right .dash-cell{overflow-y:auto}
+.dash-bottom{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--color-border)}
+.dash-bottom-cell{background:var(--color-surface);padding:var(--space-5);overflow:hidden}
+[data-theme="dark"] .dash-bottom-cell{background:#0e1812}
+
+/* === CELL HEADERS === */
+.cell-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)}
+.cell-title{font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--color-primary);
+  text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:var(--space-2)}
+
+/* === ENTITY DOSSIER === */
+.dossier-org-label{font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.dossier-name{font-family:var(--font-display);font-size:var(--text-xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-4)}
+.dossier-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--color-border);margin-bottom:var(--space-3)}
+.dossier-stat{background:var(--color-surface-offset);padding:var(--space-3)}
+[data-theme="dark"] .dossier-stat{background:#121a16}
+.dossier-stat-label{font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.dossier-stat-value{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:700;color:var(--color-primary)}
+
+/* === TELEMETRY TILES === */
+.tel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--color-border);margin-bottom:var(--space-4)}
+.tel-tile{background:var(--color-surface-offset);padding:var(--space-3)}
+[data-theme="dark"] .tel-tile{background:#121a16}
+.tel-tile-label{font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.tel-tile-value{font-family:var(--font-mono);font-size:var(--text-sm);font-weight:700;line-height:1}
+.tel-tile-sub{font-size:10px;color:var(--color-text-faint);font-family:var(--font-mono);margin-top:3px}
+
+/* === STREAM / BACKLOG ITEMS === */
+.stream-item{padding:var(--space-2) var(--space-3);border-left:2px solid var(--color-primary-highlight);margin-bottom:4px}
+.stream-item.live{border-left-color:var(--color-blue)}
+.stream-time{font-size:10px;font-family:var(--font-mono);color:var(--color-blue);margin-bottom:2px}
+.stream-text{font-size:11px;color:var(--color-text-muted);line-height:1.4}
+.backlog-item{display:flex;align-items:center;gap:var(--space-2);padding:5px var(--space-2);cursor:pointer;transition:background var(--transition-interactive)}
+.backlog-item:hover{background:var(--color-surface-dynamic)}
+.backlog-bar{width:3px;height:28px;flex-shrink:0}
+.backlog-label{font-size:11px;font-family:var(--font-mono);color:var(--color-text);flex:1;line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.backlog-meta{font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.04em}
+
+/* === IDEA PREVIEW === */
+.idea-preview-card{min-width:170px;border:1px solid var(--color-border);background:var(--color-surface-offset);
+  padding:var(--space-3);cursor:pointer;flex-shrink:0;
+  transition:border-color var(--transition-interactive),box-shadow var(--transition-interactive)}
+.idea-preview-card:hover{border-color:var(--color-primary);box-shadow:0 0 12px rgba(0,225,171,0.08)}
+.idea-preview-stage{font-size:10px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.idea-preview-title{font-size:12px;font-weight:600;color:var(--color-text);font-family:var(--font-mono)}
+
+/* === BUTTONS === */
 .btn{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);
   border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:500;cursor:pointer;
   transition:background var(--transition-interactive),box-shadow var(--transition-interactive);border:none}
@@ -112,13 +188,8 @@ select{appearance:none;cursor:pointer}
 .btn-ghost{background:transparent;color:var(--color-text-muted);border:1px solid var(--color-border)}
 .btn-ghost:hover{background:var(--color-surface-dynamic);color:var(--color-text)}
 .btn-sm{padding:var(--space-1) var(--space-3);font-size:var(--text-xs)}
-.content{flex:1;overflow-y:auto;padding:var(--space-6);padding-bottom:calc(var(--space-6) + 28px)}
 
-/* === VIEWS === */
-.view{display:none}
-.view.active{display:block}
-
-/* === GRID LAYOUTS === */
+/* === GRID LAYOUTS (other views) === */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:var(--space-4);margin-bottom:var(--space-6)}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)}
 .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4)}
@@ -126,26 +197,22 @@ select{appearance:none;cursor:pointer}
 
 /* === CARDS === */
 .card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);
-  padding:var(--space-5);box-shadow:var(--shadow-sm);transition:box-shadow var(--transition-interactive)}
+  padding:var(--space-5);box-shadow:var(--shadow-sm);transition:box-shadow var(--transition-interactive),border-color var(--transition-interactive)}
 [data-theme="dark"] .card{background:rgba(20,29,25,0.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-color:rgba(58,74,67,0.5)}
 [data-theme="dark"] .card:hover{box-shadow:0 0 20px rgba(0,225,171,0.07);border-color:rgba(0,225,171,0.2)}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)}
 .card-title{font-size:var(--text-sm);font-weight:600;color:var(--color-text);font-family:var(--font-display)}
 .card-subtitle{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px}
-.card-icon{color:var(--color-text-faint);width:16px;height:16px}
 
 /* === KPI CARD === */
 .kpi-card{background:var(--color-surface);border:1px solid var(--color-border);
   border-radius:var(--radius-lg);padding:var(--space-4);box-shadow:var(--shadow-sm);transition:box-shadow var(--transition-interactive)}
 [data-theme="dark"] .kpi-card{background:rgba(20,29,25,0.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-color:rgba(58,74,67,0.5)}
-[data-theme="dark"] .kpi-card:hover{box-shadow:0 0 20px rgba(0,225,171,0.07);border-color:rgba(0,225,171,0.2)}
-.kpi-label{font-size:var(--text-xs);color:var(--color-text-muted);font-weight:500;text-transform:uppercase;
-  letter-spacing:.05em;margin-bottom:var(--space-2)}
-.kpi-value{font-size:var(--text-xl);font-weight:700;color:var(--color-text);line-height:1;
-  font-variant-numeric:tabular-nums;font-family:var(--font-display)}
+[data-theme="dark"] .kpi-card:hover{box-shadow:0 0 20px rgba(0,225,171,0.07)}
+.kpi-label{font-size:var(--text-xs);color:var(--color-text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--space-2)}
+.kpi-value{font-size:var(--text-xl);font-weight:700;color:var(--color-text);line-height:1;font-variant-numeric:tabular-nums;font-family:var(--font-display)}
 .kpi-meta{font-size:var(--text-xs);color:var(--color-text-faint);margin-top:var(--space-1)}
-.kpi-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;
-  padding:2px 6px;border-radius:var(--radius-full);margin-top:var(--space-2)}
+.kpi-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 6px;border-radius:var(--radius-full);margin-top:var(--space-2)}
 .chip-green{background:var(--color-success-highlight);color:var(--color-success)}
 .chip-orange{background:var(--color-warning-highlight);color:var(--color-warning)}
 .chip-blue{background:var(--color-primary-highlight);color:var(--color-primary)}
@@ -181,22 +248,18 @@ select{appearance:none;cursor:pointer}
 
 /* === PROJECT ROW === */
 .project-row{display:grid;grid-template-columns:1fr 120px 80px 100px;align-items:center;
-  gap:var(--space-4);padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);
-  transition:background var(--transition-interactive)}
+  gap:var(--space-4);padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);transition:background var(--transition-interactive)}
 .project-row:hover{background:var(--color-surface-dynamic)}
 .project-row-header{font-size:var(--text-xs);font-weight:600;color:var(--color-text-faint);
   text-transform:uppercase;letter-spacing:.06em;padding:0 var(--space-4) var(--space-2)}
 .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.status-active{background:var(--color-success)}
-.status-build{background:var(--color-primary)}
-.status-idea{background:var(--color-text-faint)}
-.status-paused{background:var(--color-warning)}
+.status-active{background:var(--color-success)}.status-build{background:var(--color-primary)}
+.status-idea{background:var(--color-text-faint)}.status-paused{background:var(--color-warning)}
 .project-name-cell{display:flex;align-items:center;gap:var(--space-2)}
 .pct-label{font-size:var(--text-xs);font-family:var(--font-mono);color:var(--color-text-muted);text-align:right}
-.platform-badge{font-size:10px;background:var(--color-surface-dynamic);padding:2px 8px;
-  border-radius:var(--radius-full);color:var(--color-text-muted);white-space:nowrap}
+.platform-badge{font-size:10px;background:var(--color-surface-dynamic);padding:2px 8px;border-radius:var(--radius-full);color:var(--color-text-muted);white-space:nowrap}
 
-/* === TIMELINE / NOTES === */
+/* === NOTES / DEV LOG === */
 .note-item{padding:var(--space-4);background:var(--color-surface-offset);border-radius:var(--radius-md);margin-bottom:var(--space-3)}
 .note-header{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)}
 .note-date{font-size:var(--text-xs);color:var(--color-text-faint);font-family:var(--font-mono)}
@@ -206,21 +269,19 @@ select{appearance:none;cursor:pointer}
 /* === INCOME TABLE === */
 .income-table{width:100%;border-collapse:collapse}
 .income-table th{font-size:var(--text-xs);font-weight:600;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--color-text-faint);padding:var(--space-2) var(--space-3);text-align:left;
-  border-bottom:1px solid var(--color-divider)}
-.income-table td{font-size:var(--text-sm);padding:var(--space-3);border-bottom:1px solid var(--color-divider);
-  font-variant-numeric:tabular-nums}
+  color:var(--color-text-faint);padding:var(--space-2) var(--space-3);text-align:left;border-bottom:1px solid var(--color-divider)}
+.income-table td{font-size:var(--text-sm);padding:var(--space-3);border-bottom:1px solid var(--color-divider);font-variant-numeric:tabular-nums}
 .income-table tr:last-child td{border-bottom:none}
 .income-table tr:hover td{background:var(--color-surface-dynamic)}
 .income-positive{color:var(--color-success);font-weight:600}
 .income-pending{color:var(--color-warning)}
 
-/* === ADD TASK FORM === */
+/* === FORMS === */
 .add-form{display:flex;gap:var(--space-2);margin-bottom:var(--space-4)}
 .add-form input{flex:1}
 .section-divider{border:none;border-top:1px solid var(--color-divider);margin:var(--space-5) 0}
 
-/* === IDEAS KANBAN === */
+/* === KANBAN === */
 .kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4)}
 @media(max-width:700px){.kanban{grid-template-columns:1fr}}
 .kanban-col{background:var(--color-surface-offset);border-radius:var(--radius-lg);padding:var(--space-4);min-height:200px}
@@ -231,142 +292,29 @@ select{appearance:none;cursor:pointer}
 .idea-card-title{font-size:var(--text-sm);font-weight:500;color:var(--color-text)}
 .idea-card-desc{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:4px;line-height:1.5}
 
-/* === LINKS / RESOURCES === */
+/* === LINKS === */
 .link-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--space-3)}
 .link-card{background:var(--color-surface-offset);border-radius:var(--radius-md);padding:var(--space-4);
   display:flex;align-items:flex-start;gap:var(--space-3);cursor:pointer;
-  transition:background var(--transition-interactive),box-shadow var(--transition-interactive);
-  border:1px solid transparent}
+  transition:background var(--transition-interactive),box-shadow var(--transition-interactive);border:1px solid transparent}
 .link-card:hover{background:var(--color-surface-dynamic);border-color:var(--color-border);box-shadow:var(--shadow-sm)}
 .link-icon{width:32px;height:32px;border-radius:var(--radius-md);background:var(--color-primary-highlight);
   color:var(--color-primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .link-title{font-size:var(--text-sm);font-weight:600;color:var(--color-text)}
 .link-desc{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px}
 
-/* === MINI CHART BAR === */
-.bar-chart{display:flex;align-items:flex-end;gap:3px;height:40px;margin-top:var(--space-3)}
-.bar{flex:1;background:var(--color-primary);border-radius:var(--radius-sm) var(--radius-sm) 0 0;opacity:.7;
-  transition:opacity var(--transition-interactive)}
+/* === BAR CHART === */
+.bar-chart{display:flex;align-items:flex-end;gap:3px;height:36px;margin-top:var(--space-2)}
+.bar{flex:1;background:var(--color-primary);border-radius:var(--radius-sm) var(--radius-sm) 0 0;opacity:.6;transition:opacity var(--transition-interactive)}
 .bar:hover{opacity:1}
 .bar-labels{display:flex;gap:3px;margin-top:4px}
 .bar-lbl{flex:1;text-align:center;font-size:9px;color:var(--color-text-faint);font-family:var(--font-mono)}
-
-/* === MOBILE OVERLAY === */
-.mobile-overlay{display:none;position:fixed;inset:0;background:oklch(0.1 0 0/.5);z-index:9}
-@media(max-width:768px){
-  .sidebar{position:fixed;left:-100%;top:0;bottom:0;transition:left var(--transition-interactive);box-shadow:var(--shadow-md)}
-  .sidebar.open{left:0}
-  .mobile-overlay.open{display:block}
-  .hamburger{display:flex}
-  .content{padding-bottom:calc(var(--space-6) + 80px + 28px)}
-  .mobile-bottom-nav{display:flex;bottom:28px}
-  .welcome-heading{font-size:clamp(1.75rem,8vw,2.5rem)}
-  .sync-node-pill{bottom:calc(72px + 28px + var(--space-3))}
-}
-.hamburger{display:none;align-items:center;justify-content:center;width:32px;height:32px;
-  border-radius:var(--radius-md);color:var(--color-text-muted);cursor:pointer;
-  transition:background var(--transition-interactive)}
-.hamburger:hover{background:var(--color-surface-dynamic)}
-
-/* === SYNC SECTION === */
-.sidebar-sync{padding:var(--space-2) var(--space-3) var(--space-3);border-top:1px solid var(--color-divider)}
-.sync-connect-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:var(--space-2);
-  padding:var(--space-2) var(--space-3);border-radius:var(--radius-md);font-size:var(--text-xs);font-weight:500;
-  color:var(--color-text-muted);border:1px dashed var(--color-border);cursor:pointer;background:none;
-  transition:background var(--transition-interactive),color var(--transition-interactive)}
-.sync-connect-btn:hover{background:var(--color-surface-dynamic);color:var(--color-text)}
-.sync-connected-row{display:flex;align-items:center;gap:var(--space-2)}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--color-success);flex-shrink:0;margin-top:1px}
-
-/* === MOBILE BOTTOM NAV === */
-.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:72px;
-  background:var(--color-surface);border-top:1px solid var(--color-border);
-  border-radius:12px 12px 0 0;
-  z-index:20;padding:0 var(--space-3);align-items:center;justify-content:space-around}
-[data-theme="dark"] .mobile-bottom-nav{
-  background:rgba(10,18,14,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-color:rgba(58,74,67,0.6)}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;flex:1;padding:var(--space-1) var(--space-2);border-radius:var(--radius-full);cursor:pointer;
-  color:var(--color-text-faint);transition:color var(--transition-interactive),background var(--transition-interactive);
-  font-size:10px;font-weight:500;border:none;background:none;font-family:var(--font-mono)}
-.mobile-nav-item.active{color:var(--color-primary);background:var(--color-primary-highlight)}
-[data-theme="dark"] .mobile-nav-item.active{background:rgba(0,225,171,0.12);color:var(--color-primary)}
-.mobile-nav-item:active{background:var(--color-surface-dynamic)}
-@media(max-width:768px){.mobile-bottom-nav{display:flex}}
-
-/* === EMPTY STATE === */
-.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:var(--space-12) var(--space-8);color:var(--color-text-muted);text-align:center;gap:var(--space-3)}
-.empty-icon{color:var(--color-text-faint);opacity:.5}
-.empty h3{color:var(--color-text);font-size:var(--text-sm)}
-.empty p{font-size:var(--text-xs);max-width:30ch}
-
-/* === CALENDAR SETUP === */
-.cal-setup{max-width:640px}
-.cal-step{display:flex;gap:var(--space-3);margin-bottom:var(--space-4)}
-.cal-step-num{width:24px;height:24px;border-radius:50%;background:var(--color-primary);color:#fff;
-  font-size:var(--text-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.cal-step-body{flex:1}
-.cal-step-title{font-size:var(--text-sm);font-weight:600;color:var(--color-text);margin-bottom:4px}
-.cal-step-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.6;margin-bottom:var(--space-2)}
-.cal-input-row{display:flex;gap:var(--space-2);align-items:center}
-.cal-label{font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);white-space:nowrap;min-width:80px}
-.cal-embed{width:100%;border:none;border-radius:var(--radius-lg);background:var(--color-surface);display:block}
-.cal-frame-wrap{border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;background:var(--color-surface-offset)}
-.privacy-note{display:flex;gap:var(--space-2);align-items:flex-start;padding:var(--space-3) var(--space-4);
-  background:var(--color-warning-highlight);border-radius:var(--radius-md);margin-bottom:var(--space-4);
-  font-size:var(--text-xs);color:var(--color-warning);line-height:1.5}
-.today-events{display:flex;flex-direction:column;gap:var(--space-2)}
-.event-pill{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);
-  background:var(--color-surface-offset);border-radius:var(--radius-md);border-left:3px solid var(--color-primary)}
-.event-pill.work{border-left-color:var(--color-blue)}
-.event-pill.personal{border-left-color:var(--color-success)}
-.event-time{font-family:var(--font-mono);font-size:var(--text-xs);color:var(--color-text-muted);white-space:nowrap}
-.event-title{font-size:var(--text-sm);color:var(--color-text);font-weight:500}
-.event-cal{font-size:10px;color:var(--color-text-faint);margin-top:2px}
-.cal-tabs{display:flex;gap:var(--space-2);margin-bottom:var(--space-4)}
-.cal-tab{padding:var(--space-2) var(--space-4);border-radius:var(--radius-md);font-size:var(--text-xs);font-weight:600;
-  cursor:pointer;transition:background var(--transition-interactive),color var(--transition-interactive);
-  background:var(--color-surface-offset);color:var(--color-text-muted);border:1px solid var(--color-border)}
-.cal-tab.active{background:var(--color-primary-highlight);color:var(--color-primary);border-color:transparent}
-
-/* === TODAY SCHEDULE PANEL === */
-.schedule-panel{display:flex;flex-direction:column;gap:var(--space-2)}
-.schedule-empty{font-size:var(--text-xs);color:var(--color-text-faint);padding:var(--space-4);text-align:center}
-.event-block{display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-3);
-  background:var(--color-surface-offset);border-radius:var(--radius-md);
-  border-left:3px solid var(--color-primary)}
-.event-block.work{border-left-color:var(--color-blue)}
-.event-block.personal{border-left-color:var(--color-success)}
-.event-block.allday{border-left-color:var(--color-purple)}
-.event-time-col{min-width:70px;font-family:var(--font-mono);font-size:var(--text-xs);
-  color:var(--color-text-muted);padding-top:1px;line-height:1.4}
-.event-info{flex:1}
-.event-name{font-size:var(--text-sm);font-weight:500;color:var(--color-text);line-height:1.3}
-.event-cal-tag{font-size:10px;color:var(--color-text-faint);margin-top:2px}
-.cal-connect-btn{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-4);
-  background:var(--color-surface-offset);border:1px solid var(--color-border);border-radius:var(--radius-md);
-  cursor:pointer;transition:background var(--transition-interactive);font-size:var(--text-sm);font-weight:500;
-  color:var(--color-text);width:100%;justify-content:center;margin-bottom:var(--space-3)}
-.cal-connect-btn:hover{background:var(--color-surface-dynamic)}
-.cal-connect-btn svg{flex-shrink:0}
-.cal-status{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);
-  color:var(--color-text-muted);margin-bottom:var(--space-3)}
-.cal-status-dot{width:8px;height:8px;border-radius:50%;background:var(--color-text-faint)}
-.cal-status-dot.connected{background:var(--color-success)}
-.next-event-banner{background:var(--color-primary-highlight);border-radius:var(--radius-md);
-  padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);display:none}
-.next-event-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--color-primary);margin-bottom:4px}
-.next-event-title{font-size:var(--text-sm);font-weight:600;color:var(--color-text)}
-.next-event-time{font-size:var(--text-xs);color:var(--color-text-muted);font-family:var(--font-mono)}
 
 /* === CALENDAR === */
 .schedule-panel{display:flex;flex-direction:column;gap:8px}
 .schedule-empty{font-size:var(--text-xs);color:var(--color-text-faint);padding:var(--space-4);text-align:center}
 .event-block{display:flex;gap:var(--space-3);align-items:flex-start;padding:var(--space-3);
-  background:var(--color-surface-offset);border-radius:var(--radius-md);border-left:3px solid #4f98a3}
+  background:var(--color-surface-offset);border-radius:var(--radius-md);border-left:3px solid var(--color-primary);margin-bottom:8px}
 .event-time-col{min-width:72px;font-family:var(--font-mono);font-size:11px;color:var(--color-text-muted);padding-top:1px;line-height:1.4}
 .event-name{font-size:var(--text-sm);font-weight:500;color:var(--color-text);line-height:1.3}
 .event-cal-tag{font-size:10px;color:var(--color-text-faint);margin-top:2px}
@@ -377,72 +325,73 @@ select{appearance:none;cursor:pointer}
 .cal-connect-btn:hover{background:var(--color-surface-dynamic)}
 .cal-status{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3)}
 .cal-dot{width:8px;height:8px;border-radius:50%;background:var(--color-success)}
-.next-banner{background:var(--color-primary-highlight);border-radius:var(--radius-md);
-  padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);display:none}
+.next-banner{background:var(--color-primary-highlight);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-4);display:none}
 .next-banner-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-primary);margin-bottom:4px}
 .next-banner-title{font-size:var(--text-sm);font-weight:600;color:var(--color-text)}
 .next-banner-time{font-size:var(--text-xs);color:var(--color-text-muted);font-family:var(--font-mono)}
 
-/* === GLASS / GLOW / PULSE === */
+/* === EMPTY STATE === */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:var(--space-12) var(--space-8);color:var(--color-text-muted);text-align:center;gap:var(--space-3)}
+.empty-icon{color:var(--color-text-faint);opacity:.5}
+.empty h3{color:var(--color-text);font-size:var(--text-sm)}
+.empty p{font-size:var(--text-xs);max-width:30ch}
+
+/* === ANIMATIONS === */
 @keyframes pulse-accent{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes pulse-live{0%,100%{opacity:1}50%{opacity:0.35}}
 .pulse-accent{animation:pulse-accent 2s cubic-bezier(.4,0,.6,1) infinite}
 .pulse-live{animation:pulse-live 2s infinite}
-[data-theme="dark"] .glow-primary:hover{box-shadow:0 0 20px rgba(0,225,171,0.18)}
 
-/* === FLOATING SYNC NODE INDICATOR === */
-.sync-node-pill{position:fixed;bottom:var(--space-5);right:var(--space-5);z-index:30;
-  display:none;align-items:center;gap:var(--space-2);
-  padding:var(--space-2) var(--space-4);border-radius:var(--radius-sm);
-  font-size:var(--text-xs);font-family:var(--font-mono);color:var(--color-text);
-  background:rgba(10,18,14,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border:1px solid rgba(0,225,171,0.2);box-shadow:0 4px 24px rgba(0,0,0,0.5)}
-[data-theme="dark"] .sync-node-pill{display:flex}
-.sync-node-dot{width:8px;height:8px;border-radius:50%;background:var(--color-success);flex-shrink:0}
-@media(max-width:768px){.sync-node-pill{bottom:calc(72px + var(--space-4))}}
-
-/* === WELCOME BANNER === */
-.welcome-banner{position:relative;overflow:hidden;background:var(--color-surface);
-  border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-6);margin-bottom:var(--space-6)}
-[data-theme="dark"] .welcome-banner{background:rgba(12,21,17,0.9);border-color:rgba(0,225,171,0.15)}
-.welcome-banner-glow{position:absolute;right:-80px;top:-80px;width:300px;height:300px;
-  background:var(--color-primary);opacity:.04;border-radius:50%;filter:blur(80px);pointer-events:none}
-.welcome-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
-  color:var(--color-success);margin-bottom:var(--space-2);font-family:var(--font-mono)}
-.welcome-heading{font-family:var(--font-display);font-size:var(--text-xl);font-weight:700;color:var(--color-text);margin-bottom:var(--space-1)}
-.welcome-sub{font-size:var(--text-sm);color:var(--color-text-muted);font-family:var(--font-mono)}
-
-/* === SCANLINE OVERLAY === */
+/* === SCANLINE === */
 .scanline-overlay{position:fixed;inset:0;z-index:998;pointer-events:none;
-  background:linear-gradient(to bottom,transparent 50%,rgba(0,255,194,0.022) 50%);
-  background-size:100% 4px;opacity:1}
+  background:linear-gradient(to bottom,transparent 50%,rgba(0,255,194,0.022) 50%);background-size:100% 4px}
 [data-theme="light"] .scanline-overlay{display:none}
 
 /* === STATUS BAR === */
 .status-bar{position:fixed;bottom:0;left:0;right:0;height:28px;z-index:50;
   background:rgba(7,12,9,0.97);border-top:1px solid rgba(58,74,67,0.6);
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 var(--space-6);font-family:var(--font-mono);font-size:10px;
-  color:var(--color-text-faint);letter-spacing:.06em;
-  transition:opacity var(--transition-interactive)}
+  padding:0 var(--space-6);font-family:var(--font-mono);font-size:10px;color:var(--color-text-faint);letter-spacing:.06em}
 [data-theme="light"] .status-bar{display:none}
 .status-bar-left{display:flex;align-items:center;gap:var(--space-6)}
 .status-bar-right{display:flex;align-items:center;gap:var(--space-4);opacity:.6}
 .sb-item{display:flex;align-items:center;gap:5px}
 .sb-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 
-/* === TOPBAR LIVE STATUS === */
-.topbar-live{display:none;align-items:center;gap:6px;font-family:var(--font-mono);
-  font-size:11px;font-weight:700;color:var(--color-success);letter-spacing:.1em;text-transform:uppercase}
-[data-theme="dark"] .topbar-live{display:flex}
+/* === FLOATING SYNC PILL === */
+.sync-node-pill{position:fixed;bottom:calc(var(--space-5) + 28px);right:var(--space-5);z-index:30;
+  display:none;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-4);
+  border-radius:var(--radius-sm);font-size:var(--text-xs);font-family:var(--font-mono);color:var(--color-text);
+  background:rgba(10,18,14,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(0,225,171,0.2);box-shadow:0 4px 24px rgba(0,0,0,0.5)}
+[data-theme="dark"] .sync-node-pill{display:flex}
+.sync-node-dot{width:8px;height:8px;border-radius:50%;background:var(--color-success);flex-shrink:0}
+
+/* === MOBILE BOTTOM NAV === */
+.mobile-bottom-nav{display:none;position:fixed;bottom:28px;left:0;right:0;height:64px;
+  background:var(--color-surface);border-top:1px solid var(--color-border);
+  z-index:20;padding:0 var(--space-3);align-items:center;justify-content:space-around}
+[data-theme="dark"] .mobile-bottom-nav{background:rgba(10,18,14,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-color:rgba(58,74,67,0.6)}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;flex:1;padding:var(--space-1) var(--space-2);cursor:pointer;
+  color:var(--color-text-faint);transition:color var(--transition-interactive),background var(--transition-interactive);
+  font-size:10px;font-weight:500;border:none;background:none;font-family:var(--font-mono)}
+.mobile-nav-item.active{color:var(--color-primary);background:var(--color-primary-highlight)}
+[data-theme="dark"] .mobile-nav-item.active{background:rgba(0,225,171,0.12);color:var(--color-primary)}
+@media(max-width:768px){
+  .mobile-bottom-nav{display:flex}
+  .topnav{display:none}
+  .dash-grid{grid-template-columns:1fr;grid-template-rows:auto;height:auto}
+  .dash-right{grid-template-rows:auto auto}
+  .dash-bottom{grid-template-columns:1fr}
+  .sync-node-pill{bottom:calc(64px + 28px + var(--space-3))}
+}
 </style>
 </head>
 <body>
 
-<!-- SCANLINE OVERLAY -->
 <div class="scanline-overlay" aria-hidden="true"></div>
-
-<div class="mobile-overlay" id="overlay" onclick="closeSidebar()"></div>
 
 <!-- FLOATING SYNC INDICATOR -->
 <div class="sync-node-pill" id="sync-node-pill">
@@ -450,407 +399,449 @@ select{appearance:none;cursor:pointer}
   <span id="sync-node-label">Drive Sync Active</span>
 </div>
 
-<!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <svg class="logo-mark" viewBox="0 0 28 28" fill="none" aria-label="Studio logo">
-      <rect width="28" height="28" rx="7" fill="var(--color-primary)" opacity=".15"/>
-      <path d="M7 18 L14 8 L21 18" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      <circle cx="14" cy="19" r="2" fill="var(--color-primary)"/>
-    </svg>
-    <div>
-      <div class="sidebar-title">Tiny Studio</div>
-      <div class="sidebar-subtitle">Command Center</div>
-    </div>
-  </div>
+<div class="app-wrapper">
 
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Overview</div>
-    <div class="nav-item active" onclick="navigate('dashboard',this)">
-      <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
-    </div>
-    <div class="nav-item" onclick="navigate('projects',this)">
-      <i data-lucide="gamepad-2" class="nav-icon"></i> Projects
-    </div>
-    <div class="nav-item" onclick="navigate('tasks',this)">
-      <i data-lucide="check-square" class="nav-icon"></i> Tasks
-      <span class="nav-badge" id="task-badge">5</span>
-    </div>
-
-    <div class="nav-section-label">Studio</div>
-    <div class="nav-item" onclick="navigate('revenue',this)">
-      <i data-lucide="dollar-sign" class="nav-icon"></i> Revenue
-    </div>
-    <div class="nav-item" onclick="navigate('ideas',this)">
-      <i data-lucide="lightbulb" class="nav-icon"></i> Ideas Board
-    </div>
-    <div class="nav-item" onclick="navigate('devlog',this)">
-      <i data-lucide="book-open" class="nav-icon"></i> Dev Log
-    </div>
-
-    <div class="nav-section-label">Resources</div>
-    <div class="nav-item" onclick="navigate('resources',this)">
-      <i data-lucide="link" class="nav-icon"></i> Quick Links
-    </div>
-    <div class="nav-item" onclick="navigate('calendar',this)">
-      <i data-lucide="calendar-days" class="nav-icon"></i> Calendar
-    </div>
-  </nav>
-
-  <div class="sidebar-sync">
-    <button class="sync-connect-btn" id="sync-connect-btn" onclick="doSignIn()">
-      <i data-lucide="cloud" style="width:14px;height:14px"></i> Connect Google
-    </button>
-    <div class="sync-connected-row" id="sync-connected-row" style="display:none">
-      <div class="sync-dot"></div>
-      <div style="min-width:0;flex:1">
-        <div style="font-size:10px;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sync-email">Connected</div>
-        <div style="font-size:10px;color:var(--color-text-faint)" id="sync-status"></div>
-      </div>
-      <button onclick="loadDriveData()" style="color:var(--color-text-faint);background:none;border:none;cursor:pointer;flex-shrink:0;padding:2px;border-radius:var(--radius-sm);display:flex;align-items:center" title="Pull latest from Drive"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i></button>
-      <button onclick="doSignOut()" style="font-size:10px;color:var(--color-text-faint);background:none;border:none;cursor:pointer;flex-shrink:0" title="Sign out">✕</button>
-    </div>
-  </div>
-
-  <div class="sidebar-footer">
-    <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    </button>
-    <span style="font-size:var(--text-xs);color:var(--color-text-faint);margin-left:auto" id="clock"></span>
-  </div>
-</aside>
-
-<!-- MAIN -->
-<div class="main">
+  <!-- TOPBAR -->
   <header class="topbar">
-    <button class="hamburger" onclick="openSidebar()" aria-label="Menu">
-      <i data-lucide="menu" style="width:18px;height:18px"></i>
-    </button>
-    <span class="page-title" id="page-title">Dashboard</span>
-    <div class="topbar-live">
-      <span class="sb-dot pulse-live" style="background:var(--color-success)"></span>
-      SYSTEM LIVE
+    <div class="topbar-left">
+      <div class="topbar-search">
+        <i data-lucide="search" class="topbar-search-icon" style="width:12px;height:12px"></i>
+        <input type="text" placeholder="QUERY SYSTEM..." readonly />
+      </div>
+      <div class="topbar-live">
+        <span class="sb-dot pulse-live" style="background:var(--color-success)"></span>
+        SYSTEM LIVE <span id="build-badge" style="opacity:.4;font-weight:400;margin-left:4px;font-size:10px"></span>
+      </div>
     </div>
-    <div class="topbar-actions">
-      <span style="font-size:var(--text-xs);color:var(--color-text-muted)" id="date-display"></span>
-      <span id="build-badge" style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);background:var(--color-surface-dynamic);padding:2px 7px;border-radius:var(--radius-full);letter-spacing:.03em"></span>
+
+    <nav class="topnav" id="topnav">
+      <button class="topnav-item active" data-view="dashboard" onclick="navigate('dashboard',this)">Dashboard</button>
+      <button class="topnav-item" data-view="projects" onclick="navigate('projects',this)">Projects</button>
+      <button class="topnav-item" data-view="tasks" onclick="navigate('tasks',this)">Tasks <span class="nav-badge" id="task-badge">5</span></button>
+      <button class="topnav-item" data-view="ideas" onclick="navigate('ideas',this)">Ideas</button>
+      <button class="topnav-item" data-view="devlog" onclick="navigate('devlog',this)">Dev Log</button>
+      <button class="topnav-item" data-view="revenue" onclick="navigate('revenue',this)">Revenue</button>
+      <button class="topnav-item" data-view="calendar" onclick="navigate('calendar',this)">Calendar</button>
+      <button class="topnav-item" data-view="resources" onclick="navigate('resources',this)">Links</button>
+    </nav>
+
+    <div class="topbar-right">
+      <span id="date-display" style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint)"></span>
+      <div class="topbar-divider"></div>
+      <button class="sync-connect-btn" id="sync-connect-btn" onclick="doSignIn()">
+        <i data-lucide="cloud" style="width:12px;height:12px"></i> CONNECT
+      </button>
+      <div class="sync-connected-row" id="sync-connected-row" style="display:none">
+        <div class="sync-dot"></div>
+        <span id="sync-email" style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <span id="sync-status" style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint)"></span>
+        <button onclick="loadDriveData()" style="color:var(--color-text-faint);padding:2px;display:flex;align-items:center" title="Refresh from Drive"><i data-lucide="refresh-cw" style="width:11px;height:11px"></i></button>
+        <button onclick="doSignOut()" style="font-size:10px;color:var(--color-text-faint)" title="Sign out">✕</button>
+      </div>
+      <div class="topbar-divider"></div>
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <span style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);letter-spacing:.06em">ADMIN_OP</span>
     </div>
   </header>
 
+  <!-- CONTENT -->
   <div class="content">
 
     <!-- DASHBOARD VIEW -->
     <div class="view active" id="view-dashboard">
-      <div class="welcome-banner">
-        <div class="welcome-banner-glow"></div>
-        <div class="welcome-status">Operational Status: Active</div>
-        <div class="welcome-heading">Welcome back, Architect</div>
-        <div style="display:flex;align-items:center;gap:var(--space-2);margin-top:var(--space-2)">
-          <div style="width:8px;height:8px;border-radius:50%;background:var(--color-blue);flex-shrink:0" class="pulse-accent"></div>
-          <div class="welcome-sub">Your indie studio command center — build in public, ship with intent.</div>
-        </div>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-label">Active Projects</div>
-          <div class="kpi-value">6</div>
-          <div class="kpi-chip chip-green"><span>↑</span> 2 this month</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Tasks Due</div>
-          <div class="kpi-value" id="kpi-tasks">5</div>
-          <div class="kpi-chip chip-orange">This week</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Revenue (MTD)</div>
-          <div class="kpi-value">$0</div>
-          <div class="kpi-chip chip-blue">Pre-launch</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Streak</div>
-          <div class="kpi-value" id="streak-val">1</div>
-          <div class="kpi-meta">days building 🔥</div>
-        </div>
-      </div>
+      <div class="dash-grid">
 
-      <!-- SYSTEM PULSE -->
-      <div class="card" style="margin-bottom:var(--space-6)">
-        <div class="card-header">
-          <div>
-            <div class="card-title">System Pulse</div>
-            <div class="card-subtitle">Live browser telemetry</div>
+        <!-- LEFT: ENTITY DOSSIER -->
+        <section class="dash-cell">
+          <div class="cell-header">
+            <div class="cell-title"><i data-lucide="fingerprint" style="width:13px;height:13px"></i> ENTITY DOSSIER</div>
+            <button style="color:var(--color-text-faint)" onclick="navigate('projects',document.querySelector('[data-view=projects]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
           </div>
-          <div style="display:flex;align-items:center;gap:var(--space-2)">
-            <div style="width:7px;height:7px;border-radius:50%;background:var(--color-blue)" class="pulse-accent"></div>
-            <span style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint)">LIVE</span>
-          </div>
-        </div>
-        <div class="kpi-grid" style="margin-bottom:0">
-          <div class="kpi-card">
-            <div class="kpi-label">CPU Activity</div>
-            <div class="kpi-value" id="tel-cpu" style="color:var(--color-primary)">—</div>
-            <div class="kpi-meta" id="tel-cpu-bar" style="margin-top:var(--space-2);height:4px;background:var(--color-surface-dynamic);border-radius:var(--radius-full);overflow:hidden">
-              <div id="tel-cpu-fill" style="height:100%;background:var(--color-primary);border-radius:var(--radius-full);width:0%;transition:width .6s ease"></div>
+          <div class="dossier-org-label">Organization Name</div>
+          <div class="dossier-name">Tiny Studio</div>
+          <div class="dossier-grid">
+            <div class="dossier-stat">
+              <div class="dossier-stat-label">Foundation</div>
+              <div class="dossier-stat-value">2024</div>
+            </div>
+            <div class="dossier-stat">
+              <div class="dossier-stat-label">Projects</div>
+              <div class="dossier-stat-value" id="dos-projects">6</div>
+            </div>
+            <div class="dossier-stat">
+              <div class="dossier-stat-label">Tasks Open</div>
+              <div class="dossier-stat-value" style="color:var(--color-warning)" id="dos-tasks">5</div>
+            </div>
+            <div class="dossier-stat">
+              <div class="dossier-stat-label">Streak</div>
+              <div class="dossier-stat-value" style="color:var(--color-blue)"><span id="dos-streak">1</span>d</div>
             </div>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Network</div>
-            <div class="kpi-value" id="tel-net" style="color:var(--color-blue)">—</div>
-            <div class="kpi-meta" id="tel-net-sub">connection speed</div>
+          <div style="margin-bottom:var(--space-4)">
+            <div style="display:flex;justify-content:space-between;font-size:10px;font-family:var(--font-mono);margin-bottom:6px">
+              <span style="color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.08em">Operational Status</span>
+              <span style="color:var(--color-primary)" id="dos-stability-pct">70%</span>
+            </div>
+            <div style="width:100%;background:var(--color-surface-dynamic);height:3px">
+              <div id="dos-stability" style="background:var(--color-primary);height:100%;width:70%;box-shadow:0 0 6px rgba(0,225,171,0.4);transition:width .6s"></div>
+            </div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">CORE STABILITY</div>
           </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Session Up</div>
-            <div class="kpi-value" id="tel-uptime" style="color:var(--color-warning)">—</div>
-            <div class="kpi-meta">since page load</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Battery</div>
-            <div class="kpi-value" id="tel-battery" style="color:var(--color-success)">—</div>
-            <div class="kpi-meta" id="tel-battery-sub">charge status</div>
-          </div>
-        </div>
-      </div>
+          <div style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:var(--space-2)">Today's Priority</div>
+          <div id="dossier-tasks" style="display:flex;flex-direction:column;gap:4px"></div>
+        </section>
 
-      <div class="two-col">
-        <div class="card">
-          <div class="card-header">
-            <div><div class="card-title">Project Progress</div><div class="card-subtitle">All active builds</div></div>
+        <!-- CENTER: STUDIO HUB -->
+        <section class="dash-cell" style="overflow-y:auto">
+          <div class="cell-header">
+            <div>
+              <div class="cell-title">STUDIO HUB</div>
+              <div style="font-size:10px;color:var(--color-primary);font-family:var(--font-mono);margin-top:2px;letter-spacing:.04em">PROJECT_FEED // TASK_STREAM</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-faint);font-family:var(--font-mono)">Total Projects</div>
+              <div style="font-size:var(--text-xl);font-weight:700;font-family:var(--font-display);color:var(--color-text);line-height:1" id="hub-total">6</div>
+            </div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:var(--space-4)">
-            <div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-size:var(--text-xs);font-weight:500">Taxi Kids Game</span>
-                <span style="font-size:var(--text-xs);color:var(--color-text-muted);font-family:var(--font-mono)">35%</span>
-              </div>
-              <div class="progress-bar"><div class="progress-fill fill-orange" style="width:35%"></div></div>
+
+          <!-- Telemetry strip -->
+          <div class="tel-grid">
+            <div class="tel-tile">
+              <div class="tel-tile-label">CPU Activity</div>
+              <div class="tel-tile-value" id="tel-cpu" style="color:var(--color-primary)">—</div>
+              <div style="height:2px;background:var(--color-surface-dynamic);margin-top:4px"><div id="tel-cpu-fill" style="height:100%;background:var(--color-primary);width:0%;transition:width .6s"></div></div>
             </div>
-            <div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-size:var(--text-xs);font-weight:500">OutfitMate / FitCloset</span>
-                <span style="font-size:var(--text-xs);color:var(--color-text-muted);font-family:var(--font-mono)">55%</span>
-              </div>
-              <div class="progress-bar"><div class="progress-fill fill-purple" style="width:55%"></div></div>
+            <div class="tel-tile">
+              <div class="tel-tile-label">Network</div>
+              <div class="tel-tile-value" id="tel-net" style="color:var(--color-blue)">—</div>
+              <div class="tel-tile-sub" id="tel-net-sub">latency</div>
             </div>
+            <div class="tel-tile">
+              <div class="tel-tile-label">Session Up</div>
+              <div class="tel-tile-value" id="tel-uptime" style="color:var(--color-warning)">—</div>
+              <div class="tel-tile-sub">since load</div>
+            </div>
+            <div class="tel-tile">
+              <div class="tel-tile-label">Battery</div>
+              <div class="tel-tile-value" id="tel-battery" style="color:var(--color-success)">—</div>
+              <div class="tel-tile-sub" id="tel-battery-sub">charge</div>
+            </div>
+          </div>
+
+          <!-- Project progress -->
+          <div style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:var(--space-3)">Project Progress</div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-3);margin-bottom:var(--space-5)">
             <div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-size:var(--text-xs);font-weight:500">Boss Fight Mini Game</span>
-                <span style="font-size:var(--text-xs);color:var(--color-text-muted);font-family:var(--font-mono)">20%</span>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:11px;font-family:var(--font-mono)">Taxi Kids Game</span>
+                <span style="font-size:11px;font-family:var(--font-mono);color:var(--color-text-faint)">35%</span>
               </div>
-              <div class="progress-bar"><div class="progress-fill fill-purple" style="width:20%;background:var(--color-error)"></div></div>
+              <div style="height:3px;background:var(--color-surface-dynamic)"><div style="width:35%;height:100%;background:var(--color-orange)"></div></div>
             </div>
             <div>
-              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                <span style="font-size:var(--text-xs);font-weight:500">Lumber Game (Godot)</span>
-                <span style="font-size:var(--text-xs);color:var(--color-text-muted);font-family:var(--font-mono)">15%</span>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:11px;font-family:var(--font-mono)">OutfitMate / FitCloset</span>
+                <span style="font-size:11px;font-family:var(--font-mono);color:var(--color-text-faint)">55%</span>
               </div>
-              <div class="progress-bar"><div class="progress-fill fill-green" style="width:15%"></div></div>
+              <div style="height:3px;background:var(--color-surface-dynamic)"><div style="width:55%;height:100%;background:var(--color-primary)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:11px;font-family:var(--font-mono)">Boss Fight Mini Game</span>
+                <span style="font-size:11px;font-family:var(--font-mono);color:var(--color-text-faint)">20%</span>
+              </div>
+              <div style="height:3px;background:var(--color-surface-dynamic)"><div style="width:20%;height:100%;background:var(--color-error)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:11px;font-family:var(--font-mono)">Lumber Game (Godot)</span>
+                <span style="font-size:11px;font-family:var(--font-mono);color:var(--color-text-faint)">15%</span>
+              </div>
+              <div style="height:3px;background:var(--color-surface-dynamic)"><div style="width:15%;height:100%;background:var(--color-success)"></div></div>
             </div>
           </div>
-        </div>
 
-        <div class="card">
-          <div class="card-header">
-            <div><div class="card-title">Today's Focus</div><div class="card-subtitle">Top priority tasks</div></div>
-            <button class="btn btn-ghost btn-sm" onclick="navigate('tasks',document.querySelector('[onclick*=tasks]'))">View all</button>
-          </div>
-          <div class="task-list" id="focus-tasks"></div>
-        </div>
-      </div>
-
-      <div style="height:var(--space-4)"></div>
-
-      <div class="two-col">
-        <div class="card">
-          <div class="card-header">
-            <div><div class="card-title">Build Momentum</div><div class="card-subtitle">Days active this month</div></div>
-          </div>
+          <!-- Build streak -->
+          <div style="font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.08em;margin-bottom:var(--space-1)">Build Momentum</div>
           <div class="bar-chart" id="streak-chart"></div>
           <div class="bar-labels" id="streak-labels"></div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <div><div class="card-title">Quick Actions</div></div>
+        </section>
+
+        <!-- RIGHT: DEV STREAM + OPS BACKLOG -->
+        <section class="dash-right">
+          <div class="dash-cell">
+            <div class="cell-header">
+              <div class="cell-title" style="color:var(--color-blue)"><i data-lucide="terminal" style="width:13px;height:13px"></i> DEV STREAM</div>
+              <button style="color:var(--color-text-faint)" onclick="navigate('devlog',document.querySelector('[data-view=devlog]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
+            </div>
+            <div id="dev-stream-list" style="display:flex;flex-direction:column"></div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:var(--space-2)">
-            <button class="btn btn-ghost" style="justify-content:flex-start;gap:var(--space-3)" onclick="navigate('tasks',document.querySelector('[onclick*=tasks]'))">
-              <i data-lucide="plus" style="width:14px;height:14px"></i> Add Task
-            </button>
-            <button class="btn btn-ghost" style="justify-content:flex-start;gap:var(--space-3)" onclick="navigate('devlog',document.querySelector('[onclick*=devlog]'))">
-              <i data-lucide="edit-3" style="width:14px;height:14px"></i> Write Dev Log Entry
-            </button>
-            <button class="btn btn-ghost" style="justify-content:flex-start;gap:var(--space-3)" onclick="navigate('ideas',document.querySelector('[onclick*=ideas]'))">
-              <i data-lucide="lightbulb" style="width:14px;height:14px"></i> Add Idea
-            </button>
-            <button class="btn btn-primary" style="justify-content:flex-start;gap:var(--space-3);margin-top:var(--space-2)" onclick="markStreakToday()">
-              <i data-lucide="zap" style="width:14px;height:14px"></i> Log Today's Build Session
+          <div class="dash-cell">
+            <div class="cell-header">
+              <div class="cell-title" style="color:var(--color-warning)"><i data-lucide="alert-triangle" style="width:13px;height:13px"></i> OPS BACKLOG</div>
+              <button style="color:var(--color-text-faint)" onclick="navigate('tasks',document.querySelector('[data-view=tasks]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
+            </div>
+            <div id="ops-backlog-list" style="display:flex;flex-direction:column"></div>
+          </div>
+        </section>
+
+        <!-- BOTTOM ROW -->
+        <div class="dash-bottom">
+          <!-- IDEA LAB -->
+          <div class="dash-bottom-cell">
+            <div class="cell-header">
+              <div class="cell-title"><i data-lucide="lightbulb" style="width:13px;height:13px"></i> IDEA LAB</div>
+              <div style="display:flex;gap:var(--space-2)">
+                <button class="btn btn-ghost btn-sm" onclick="navigate('ideas',document.querySelector('[data-view=ideas]'))">View all</button>
+                <button class="btn btn-ghost btn-sm" onclick="navigate('ideas',document.querySelector('[data-view=ideas]'))"><i data-lucide="plus" style="width:12px;height:12px"></i></button>
+              </div>
+            </div>
+            <div id="idea-lab-preview" style="display:flex;gap:var(--space-3);overflow-x:auto;padding-bottom:4px"></div>
+          </div>
+          <!-- QUICK OPS -->
+          <div class="dash-bottom-cell">
+            <div class="cell-header">
+              <div class="cell-title"><i data-lucide="zap" style="width:13px;height:13px"></i> QUICK OPS</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-3)">
+              <button class="btn btn-ghost" style="justify-content:flex-start;gap:6px;font-size:11px;font-family:var(--font-mono);letter-spacing:.05em" onclick="navigate('tasks',document.querySelector('[data-view=tasks]'))">
+                <i data-lucide="plus" style="width:12px;height:12px"></i> ADD_TASK
+              </button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;gap:6px;font-size:11px;font-family:var(--font-mono);letter-spacing:.05em" onclick="navigate('devlog',document.querySelector('[data-view=devlog]'))">
+                <i data-lucide="edit-3" style="width:12px;height:12px"></i> LOG_ENTRY
+              </button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;gap:6px;font-size:11px;font-family:var(--font-mono);letter-spacing:.05em" onclick="navigate('ideas',document.querySelector('[data-view=ideas]'))">
+                <i data-lucide="lightbulb" style="width:12px;height:12px"></i> ADD_IDEA
+              </button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;gap:6px;font-size:11px;font-family:var(--font-mono);letter-spacing:.05em" onclick="navigate('calendar',document.querySelector('[data-view=calendar]'))">
+                <i data-lucide="calendar" style="width:12px;height:12px"></i> CALENDAR
+              </button>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em" onclick="markStreakToday()">
+              <i data-lucide="zap" style="width:12px;height:12px"></i> LOG_BUILD_SESSION
             </button>
           </div>
         </div>
+
       </div>
-    </div>
+    </div><!-- /view-dashboard -->
 
     <!-- PROJECTS VIEW -->
     <div class="view" id="view-projects">
-      <div class="project-row-header project-row" style="cursor:default">
-        <span>Project</span><span>Platform</span><span>Progress</span><span>Status</span>
-      </div>
-      <div class="card" style="padding:var(--space-2)">
-        <div id="project-rows"></div>
+      <div class="view-inner">
+        <div class="project-row-header project-row" style="cursor:default">
+          <span>Project</span><span>Platform</span><span>Progress</span><span>Status</span>
+        </div>
+        <div class="card" style="padding:var(--space-2)">
+          <div id="project-rows"></div>
+        </div>
       </div>
     </div>
 
     <!-- TASKS VIEW -->
     <div class="view" id="view-tasks">
-      <div class="card" style="margin-bottom:var(--space-4)">
-        <div class="card-title" style="margin-bottom:var(--space-4)">Add Task</div>
-        <div class="add-form">
-          <input type="text" id="task-input" placeholder="New task description..." />
-          <select id="task-project" style="width:140px">
-            <option value="">All Projects</option>
-            <option value="taxi">Taxi Kids</option>
-            <option value="outfit">OutfitMate</option>
-            <option value="boss">Boss Fight</option>
-            <option value="lumber">Lumber Game</option>
-            <option value="fitness">Fitness App</option>
-          </select>
-          <button class="btn btn-primary" onclick="addTask()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">All Tasks</div>
-          <span style="font-size:var(--text-xs);color:var(--color-text-muted)" id="task-count-label"></span>
-        </div>
-        <div class="task-list" id="all-tasks-list"></div>
-      </div>
-    </div>
-
-    <!-- REVENUE VIEW -->
-    <div class="view" id="view-revenue">
-      <div class="kpi-grid">
-        <div class="kpi-card"><div class="kpi-label">Total Revenue</div><div class="kpi-value">$0</div><div class="kpi-meta">Studio lifetime</div></div>
-        <div class="kpi-card"><div class="kpi-label">This Month</div><div class="kpi-value">$0</div><div class="kpi-chip chip-orange">Pre-launch phase</div></div>
-        <div class="kpi-card"><div class="kpi-label">Target MRR</div><div class="kpi-value">$500</div><div class="kpi-meta">First milestone</div></div>
-        <div class="kpi-card"><div class="kpi-label">Apps Live</div><div class="kpi-value">0</div><div class="kpi-meta">Publishing soon</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><div class="card-title">Revenue Log</div>
-          <button class="btn btn-primary btn-sm" onclick="showAddRevenue()"><i data-lucide="plus" style="width:12px;height:12px"></i> Add Entry</button>
-        </div>
-        <div id="add-revenue-form" style="display:none;margin-bottom:var(--space-4)">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:var(--space-2)">
-            <input type="text" id="rev-source" placeholder="Source (e.g. AdMob)"/>
-            <input type="number" id="rev-amount" placeholder="Amount ($)"/>
-            <input type="text" id="rev-note" placeholder="Note"/>
-            <button class="btn btn-primary" onclick="addRevenue()">Add</button>
-          </div>
-        </div>
-        <div id="revenue-list">
-          <div class="empty"><div class="empty-icon"><i data-lucide="dollar-sign" style="width:40px;height:40px"></i></div>
-            <h3>No revenue yet</h3><p>Add your first entry once apps are live 🚀</p></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- IDEAS VIEW -->
-    <div class="view" id="view-ideas">
-      <div class="card" style="margin-bottom:var(--space-4)">
-        <div class="card-title" style="margin-bottom:var(--space-3)">Capture Idea</div>
-        <div style="display:flex;gap:var(--space-2)">
-          <input type="text" id="idea-input" placeholder="Game concept, feature, mechanic..." style="flex:1"/>
-          <select id="idea-stage" style="width:130px">
-            <option value="backlog">Backlog</option>
-            <option value="exploring">Exploring</option>
-            <option value="building">Building</option>
-          </select>
-          <button class="btn btn-primary" onclick="addIdea()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add</button>
-        </div>
-      </div>
-      <div class="kanban" id="ideas-kanban"></div>
-    </div>
-
-    <!-- DEV LOG VIEW -->
-    <div class="view" id="view-devlog">
-      <div class="card" style="margin-bottom:var(--space-4)">
-        <div class="card-title" style="margin-bottom:var(--space-3)">New Log Entry</div>
-        <div style="display:flex;flex-direction:column;gap:var(--space-3)">
-          <div style="display:flex;gap:var(--space-2)">
-            <input type="text" id="log-title" placeholder="What did you build today?" style="flex:1"/>
-            <select id="log-project" style="width:150px">
-              <option value="">General</option>
+      <div class="view-inner">
+        <div class="card" style="margin-bottom:var(--space-4)">
+          <div class="card-title" style="margin-bottom:var(--space-4)">Add Task</div>
+          <div class="add-form">
+            <input type="text" id="task-input" placeholder="New task description..." />
+            <select id="task-project" style="width:140px">
+              <option value="">All Projects</option>
               <option value="taxi">Taxi Kids</option>
               <option value="outfit">OutfitMate</option>
               <option value="boss">Boss Fight</option>
               <option value="lumber">Lumber Game</option>
               <option value="fitness">Fitness App</option>
             </select>
+            <button class="btn btn-primary" onclick="addTask()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add</button>
           </div>
-          <textarea id="log-body" placeholder="Details, blockers, wins, next steps..."></textarea>
-          <div style="display:flex;justify-content:flex-end">
-            <button class="btn btn-primary" onclick="addLog()"><i data-lucide="save" style="width:14px;height:14px"></i> Save Entry</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Tasks</div>
+            <span style="font-size:var(--text-xs);color:var(--color-text-muted)" id="task-count-label"></span>
+          </div>
+          <div class="task-list" id="all-tasks-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVENUE VIEW -->
+    <div class="view" id="view-revenue">
+      <div class="view-inner">
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Total Revenue</div><div class="kpi-value">$0</div><div class="kpi-meta">Studio lifetime</div></div>
+          <div class="kpi-card"><div class="kpi-label">This Month</div><div class="kpi-value">$0</div><div class="kpi-chip chip-orange">Pre-launch phase</div></div>
+          <div class="kpi-card"><div class="kpi-label">Target MRR</div><div class="kpi-value">$500</div><div class="kpi-meta">First milestone</div></div>
+          <div class="kpi-card"><div class="kpi-label">Apps Live</div><div class="kpi-value">0</div><div class="kpi-meta">Publishing soon</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Revenue Log</div>
+            <button class="btn btn-primary btn-sm" onclick="showAddRevenue()"><i data-lucide="plus" style="width:12px;height:12px"></i> Add Entry</button>
+          </div>
+          <div id="add-revenue-form" style="display:none;margin-bottom:var(--space-4)">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:var(--space-2)">
+              <input type="text" id="rev-source" placeholder="Source (e.g. AdMob)"/>
+              <input type="number" id="rev-amount" placeholder="Amount ($)"/>
+              <input type="text" id="rev-note" placeholder="Note"/>
+              <button class="btn btn-primary" onclick="addRevenue()">Add</button>
+            </div>
+          </div>
+          <div id="revenue-list">
+            <div class="empty"><div class="empty-icon"><i data-lucide="dollar-sign" style="width:40px;height:40px"></i></div>
+              <h3>No revenue yet</h3><p>Add your first entry once apps are live 🚀</p></div>
           </div>
         </div>
       </div>
-      <div id="log-list"></div>
+    </div>
+
+    <!-- IDEAS VIEW -->
+    <div class="view" id="view-ideas">
+      <div class="view-inner">
+        <div class="card" style="margin-bottom:var(--space-4)">
+          <div class="card-title" style="margin-bottom:var(--space-3)">Capture Idea</div>
+          <div style="display:flex;gap:var(--space-2)">
+            <input type="text" id="idea-input" placeholder="Game concept, feature, mechanic..." style="flex:1"/>
+            <select id="idea-stage" style="width:130px">
+              <option value="backlog">Backlog</option>
+              <option value="exploring">Exploring</option>
+              <option value="building">Building</option>
+            </select>
+            <button class="btn btn-primary" onclick="addIdea()"><i data-lucide="plus" style="width:14px;height:14px"></i> Add</button>
+          </div>
+        </div>
+        <div class="kanban" id="ideas-kanban"></div>
+      </div>
+    </div>
+
+    <!-- DEV LOG VIEW -->
+    <div class="view" id="view-devlog">
+      <div class="view-inner">
+        <div class="card" style="margin-bottom:var(--space-4)">
+          <div class="card-title" style="margin-bottom:var(--space-3)">New Log Entry</div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <div style="display:flex;gap:var(--space-2)">
+              <input type="text" id="log-title" placeholder="What did you build today?" style="flex:1"/>
+              <select id="log-project" style="width:150px">
+                <option value="">General</option>
+                <option value="taxi">Taxi Kids</option>
+                <option value="outfit">OutfitMate</option>
+                <option value="boss">Boss Fight</option>
+                <option value="lumber">Lumber Game</option>
+                <option value="fitness">Fitness App</option>
+              </select>
+            </div>
+            <textarea id="log-body" placeholder="Details, blockers, wins, next steps..."></textarea>
+            <div style="display:flex;justify-content:flex-end">
+              <button class="btn btn-primary" onclick="addLog()"><i data-lucide="save" style="width:14px;height:14px"></i> Save Entry</button>
+            </div>
+          </div>
+        </div>
+        <div id="log-list"></div>
+      </div>
     </div>
 
     <!-- RESOURCES VIEW -->
     <div class="view" id="view-resources">
-      <div class="link-grid" id="link-grid"></div>
+      <div class="view-inner">
+        <div class="link-grid" id="link-grid"></div>
+      </div>
     </div>
-
 
     <!-- CALENDAR VIEW -->
     <div class="view" id="view-calendar">
-      <div class="next-banner" id="next-banner">
-        <div class="next-banner-label">⚡ Next Up</div>
-        <div class="next-banner-title" id="next-banner-title"></div>
-        <div class="next-banner-time" id="next-banner-time"></div>
-      </div>
-      <div class="two-col">
-        <div class="card">
-          <div class="card-header">
-            <div><div class="card-title">Today's Schedule</div><div class="card-subtitle" id="cal-date-label"></div></div>
-            <button class="btn btn-ghost btn-sm" id="btn-refresh" style="display:none" onclick="loadCalendarData()">
-              <i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Refresh
-            </button>
-          </div>
-          <div id="signin-section">
-            <p style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3);line-height:1.6">
-              Sign in with your <strong>personal Google account</strong>. Your work calendar will show automatically if shared to this account.
-            </p>
-            <button class="cal-connect-btn" id="btn-signin" onclick="doSignIn()">
-              <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-              Sign in with Google
-            </button>
-          </div>
-          <div id="connected-section" style="display:none">
-            <div class="cal-status">
-              <div class="cal-dot"></div>
-              <span id="cal-email">Connected</span>
-              <button onclick="doSignOut()" style="margin-left:auto;font-size:10px;color:var(--color-text-faint);text-decoration:underline;cursor:pointer">Sign out</button>
-            </div>
-            <div id="cal-tags" style="margin-bottom:var(--space-3)"></div>
-          </div>
-          <div class="schedule-panel" id="today-panel">
-            <div class="schedule-empty">Sign in to see your schedule</div>
-          </div>
+      <div class="view-inner">
+        <div class="next-banner" id="next-banner">
+          <div class="next-banner-label">⚡ Next Up</div>
+          <div class="next-banner-title" id="next-banner-title"></div>
+          <div class="next-banner-time" id="next-banner-time"></div>
         </div>
-        <div class="card">
-          <div class="card-header">
-            <div><div class="card-title">This Week</div><div class="card-subtitle">Upcoming events</div></div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Today's Schedule</div><div class="card-subtitle" id="cal-date-label"></div></div>
+              <button class="btn btn-ghost btn-sm" id="btn-refresh" style="display:none" onclick="loadCalendarData()">
+                <i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Refresh
+              </button>
+            </div>
+            <div id="signin-section">
+              <p style="font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-3);line-height:1.6">
+                Sign in with your <strong>personal Google account</strong>. Your work calendar will show automatically if shared to this account.
+              </p>
+              <button class="cal-connect-btn" id="btn-signin" onclick="doSignIn()">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Sign in with Google
+              </button>
+            </div>
+            <div id="connected-section" style="display:none">
+              <div class="cal-status">
+                <div class="cal-dot"></div>
+                <span id="cal-email">Connected</span>
+                <button onclick="doSignOut()" style="margin-left:auto;font-size:10px;color:var(--color-text-faint);text-decoration:underline;cursor:pointer">Sign out</button>
+              </div>
+              <div id="cal-tags" style="margin-bottom:var(--space-3)"></div>
+            </div>
+            <div class="schedule-panel" id="today-panel">
+              <div class="schedule-empty">Sign in to see your schedule</div>
+            </div>
           </div>
-          <div class="schedule-panel" id="week-panel">
-            <div class="schedule-empty">Sign in to see upcoming events</div>
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">This Week</div><div class="card-subtitle">Upcoming events</div></div>
+            </div>
+            <div class="schedule-panel" id="week-panel">
+              <div class="schedule-empty">Sign in to see upcoming events</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+  </div><!-- /content -->
+</div><!-- /app-wrapper -->
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+  <button class="mobile-nav-item active" data-view="dashboard" onclick="navigate('dashboard',null)">
+    <i data-lucide="layout-dashboard" style="width:20px;height:20px"></i>
+    <span>Home</span>
+  </button>
+  <button class="mobile-nav-item" data-view="tasks" onclick="navigate('tasks',null)">
+    <i data-lucide="check-square" style="width:20px;height:20px"></i>
+    <span>Tasks</span>
+  </button>
+  <button class="mobile-nav-item" data-view="projects" onclick="navigate('projects',null)">
+    <i data-lucide="folder-kanban" style="width:20px;height:20px"></i>
+    <span>Projects</span>
+  </button>
+  <button class="mobile-nav-item" data-view="calendar" onclick="navigate('calendar',null)">
+    <i data-lucide="calendar" style="width:20px;height:20px"></i>
+    <span>Cal</span>
+  </button>
+  <button class="mobile-nav-item" data-view="ideas" onclick="navigate('ideas',null)">
+    <i data-lucide="lightbulb" style="width:20px;height:20px"></i>
+    <span>Ideas</span>
+  </button>
+</nav>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="status-bar">
+  <div class="status-bar-left">
+    <div class="sb-item"><div class="sb-dot" style="background:var(--color-success)"></div><span>CPU: <span id="sb-cpu">—</span></span></div>
+    <div class="sb-item"><div class="sb-dot" style="background:var(--color-blue)"></div><span>NET: <span id="sb-net">—</span></span></div>
+    <div class="sb-item"><div class="sb-dot" style="background:var(--color-warning)"></div><span>BAT: <span id="sb-bat">—</span></span></div>
+    <div class="sb-item"><div class="sb-dot" style="background:var(--color-primary)"></div><span>UPTIME: <span id="sb-uptime">—</span></span></div>
+  </div>
+  <div class="status-bar-right">
+    <span>SECURE_ENCRYPTION_ENABLED</span>
+    <span style="color:var(--color-primary)">CONNECTION_STABLE</span>
   </div>
 </div>
 
 <script>
-const BUILD = '2026-05-30.10';
+const BUILD = '2026-05-30.11';
 
 // === STATE ===
 let tasks = [
@@ -903,41 +894,117 @@ const links = [
 function navigate(view, el) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+view).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  if(el) el.classList.add('active');
-  document.getElementById('page-title').textContent = {
-    dashboard:'Dashboard',projects:'Projects',tasks:'Tasks',
-    revenue:'Revenue',ideas:'Ideas Board',devlog:'Dev Log',resources:'Quick Links',calendar:'Calendar'
-  }[view]||view;
+  document.querySelectorAll('.topnav-item').forEach(n=>n.classList.remove('active'));
+  var tn = document.querySelector('.topnav-item[data-view="'+view+'"]');
+  if(tn) tn.classList.add('active');
   document.querySelectorAll('.mobile-nav-item').forEach(n=>n.classList.remove('active'));
   var bn=document.querySelector('.mobile-nav-item[data-view="'+view+'"]');
   if(bn) bn.classList.add('active');
   renderAll();
-  closeSidebar();
 }
 
 // === RENDER ===
-function renderAll(){renderFocusTasks();renderAllTasks();renderProjects();renderIdeas();renderLogs();renderLinks();renderStreak();}
+function renderAll(){
+  renderAllTasks();
+  renderProjects();
+  renderIdeas();
+  renderLogs();
+  renderLinks();
+  renderStreak();
+  renderDevStream();
+  renderOpsBacklog();
+  renderIdeaLabPreview();
+  updateDossier();
+}
 
-function renderFocusTasks(){
-  const el = document.getElementById('focus-tasks');
-  const open = tasks.filter(t=>!t.done).slice(0,4);
-  if(!open.length){el.innerHTML='<div class="empty"><div class="empty-icon"><i data-lucide="check-circle" style="width:32px;height:32px"></i></div><h3>All done!</h3><p>Add more tasks to stay focused</p></div>';lucide.createIcons();return;}
-  el.innerHTML = open.map(t=>`
-    <div class="task-item ${t.done?'done':''}" onclick="toggleTask(${t.id})">
-      <div class="task-check">${t.done?'<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none"/></svg>':''}</div>
-      <div><div class="task-label">${t.label}</div>
-      <div class="task-meta"><span class="tag ${tagMap[t.project]||''}">${tagLabel[t.project]||'General'}</span>${t.date}</div></div>
-    </div>`).join('');
-  lucide.createIcons();
+function renderDevStream() {
+  var el = document.getElementById('dev-stream-list');
+  if (!el) return;
+  if (!logs.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--color-text-faint);font-family:var(--font-mono);padding:var(--space-3)">No entries yet.</div>';
+    return;
+  }
+  el.innerHTML = logs.slice().reverse().slice(0,3).map(function(l) {
+    return '<div class="stream-item live">' +
+      '<div class="stream-time">' + formatDate(l.date) + (l.project ? ' · ' + (tagLabel[l.project]||'') : '') + '</div>' +
+      '<div class="stream-text">' + l.title + (l.body ? ' — ' + l.body.substring(0,70) + (l.body.length>70?'…':'') : '') + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function renderOpsBacklog() {
+  var el = document.getElementById('ops-backlog-list');
+  if (!el) return;
+  var open = tasks.filter(function(t){return !t.done;}).slice(0,4);
+  if (!open.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--color-success);font-family:var(--font-mono);padding:var(--space-3)">ALL_CLEAR // No open tasks.</div>';
+    return;
+  }
+  var bars = ['var(--color-error)','var(--color-warning)','var(--color-primary)','var(--color-text-faint)'];
+  el.innerHTML = open.map(function(t,i) {
+    return '<div class="backlog-item" onclick="toggleTask('+t.id+')">' +
+      '<div class="backlog-bar" style="background:'+bars[i]+'"></div>' +
+      '<div style="min-width:0"><div class="backlog-label">'+t.label+'</div>' +
+      '<div class="backlog-meta">'+(tagLabel[t.project]||'General')+' // '+(t.date||'TBD')+'</div></div>' +
+      '</div>';
+  }).join('');
+}
+
+function renderIdeaLabPreview() {
+  var el = document.getElementById('idea-lab-preview');
+  if (!el) return;
+  var preview = ideas.slice(0,6);
+  if (!preview.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--color-text-faint);font-family:var(--font-mono)">No ideas yet.</div>';
+    return;
+  }
+  var stageColors = {backlog:'var(--color-text-faint)',exploring:'var(--color-blue)',building:'var(--color-primary)'};
+  el.innerHTML = preview.map(function(i) {
+    return '<div class="idea-preview-card">' +
+      '<div class="idea-preview-stage" style="color:'+(stageColors[i.stage]||'var(--color-text-faint)')+'">'+i.stage+'</div>' +
+      '<div class="idea-preview-title">'+i.title+'</div>' +
+      '</div>';
+  }).join('');
+}
+
+function updateDossier() {
+  var open = tasks.filter(function(t){return !t.done;}).length;
+  var el;
+  el = document.getElementById('dos-tasks'); if(el) el.textContent = open;
+  el = document.getElementById('dos-streak'); if(el) el.textContent = streakCount;
+  el = document.getElementById('dos-projects'); if(el) el.textContent = projects.length;
+  el = document.getElementById('hub-total'); if(el) el.textContent = projects.length;
+  var total = tasks.length;
+  var done = tasks.filter(function(t){return t.done;}).length;
+  var pct = total > 0 ? Math.round((done/total)*100) : 70;
+  el = document.getElementById('dos-stability'); if(el) el.style.width = pct+'%';
+  el = document.getElementById('dos-stability-pct'); if(el) el.textContent = pct+'%';
+  // also update task badge
+  var badge = document.getElementById('task-badge');
+  if(badge){ badge.textContent = open; badge.style.display = open ? '' : 'none'; }
+  // dossier today tasks
+  var dt = document.getElementById('dossier-tasks');
+  if (dt) {
+    var top3 = tasks.filter(function(t){return !t.done;}).slice(0,3);
+    if (!top3.length) {
+      dt.innerHTML = '<div style="font-size:10px;color:var(--color-success);font-family:var(--font-mono)">ALL_CLEAR</div>';
+    } else {
+      dt.innerHTML = top3.map(function(t) {
+        return '<div style="display:flex;gap:6px;align-items:center;padding:4px 0;border-bottom:1px solid var(--color-divider)">' +
+          '<div style="width:4px;height:4px;border-radius:50%;background:var(--color-warning);flex-shrink:0;margin-top:1px"></div>' +
+          '<div style="font-size:11px;font-family:var(--font-mono);color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+t.label+'</div>' +
+          '</div>';
+      }).join('');
+    }
+  }
 }
 
 function renderAllTasks(){
-  const el = document.getElementById('all-tasks-list');
+  var el = document.getElementById('all-tasks-list');
   if(!el) return;
-  const open = tasks.filter(t=>!t.done);
-  const done = tasks.filter(t=>t.done);
-  const render = t=>`
+  var open = tasks.filter(t=>!t.done);
+  var done = tasks.filter(t=>t.done);
+  var render = t=>`
     <div class="task-item ${t.done?'done':''}" onclick="toggleTask(${t.id})">
       <div class="task-check">${t.done?'<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="#fff" stroke-width="2" fill="none"/></svg>':''}</div>
       <div style="flex:1"><div class="task-label">${t.label}</div>
@@ -945,10 +1012,8 @@ function renderAllTasks(){
       <button onclick="event.stopPropagation();deleteTask(${t.id})" style="color:var(--color-text-faint);padding:4px"><i data-lucide="x" style="width:12px;height:12px"></i></button>
     </div>`;
   el.innerHTML = open.map(render).join('')+(done.length?`<hr class="section-divider"><div style="font-size:var(--text-xs);color:var(--color-text-faint);margin-bottom:var(--space-2)">Completed</div>`+done.map(render).join(''):'');
-  document.getElementById('task-count-label').textContent = `${open.length} open · ${done.length} done`;
-  const badge = document.getElementById('task-badge');
-  badge.textContent = open.length; badge.style.display=open.length?'':'none';
-  document.getElementById('kpi-tasks').textContent = open.length;
+  var cl = document.getElementById('task-count-label');
+  if(cl) cl.textContent = `${open.length} open · ${done.length} done`;
   lucide.createIcons();
 }
 
@@ -996,7 +1061,7 @@ function addIdea(){
   const inp=document.getElementById('idea-input');const stage=document.getElementById('idea-stage');
   if(!inp.value.trim())return;
   ideas.unshift({id:Date.now(),title:inp.value.trim(),desc:'',stage:stage.value});
-  inp.value='';renderIdeas();scheduleDriveSave();
+  inp.value='';renderIdeas();renderIdeaLabPreview();scheduleDriveSave();
 }
 
 function renderLogs(){
@@ -1021,7 +1086,7 @@ function addLog(){
   logs.push({id:Date.now(),title,body,project,date:new Date()});
   document.getElementById('log-title').value='';
   document.getElementById('log-body').value='';
-  renderLogs();scheduleDriveSave();
+  renderLogs();renderDevStream();scheduleDriveSave();
 }
 
 function renderLinks(){
@@ -1041,22 +1106,20 @@ function renderStreak(){
   const days=['1','5','10','15','20','25','30'];
   const sample=[streakDays[0],streakDays[4],streakDays[9],streakDays[14],streakDays[19],streakDays[24],streakDays[29]];
   chart.innerHTML=sample.map((v,i)=>`<div class="bar" style="height:${v?100:20}%;opacity:${v?1:.25}" title="Day ${days[i]}"></div>`).join('');
-  labels.innerHTML=days.map(d=>`<div class="bar-lbl">${d}</div>`).join('');
-  document.getElementById('streak-val').textContent=streakCount;
+  if(labels) labels.innerHTML=days.map(d=>`<div class="bar-lbl">${d}</div>`).join('');
 }
 
 function markStreakToday(){
   streakCount++;
   streakDays[29]=1;
-  renderStreak();scheduleDriveSave();
+  renderStreak();updateDossier();scheduleDriveSave();
   const btn=event.target.closest('button');
   const orig=btn.innerHTML;
-  btn.innerHTML='<i data-lucide="check" style="width:14px;height:14px"></i> Logged!';
+  btn.innerHTML='<i data-lucide="check" style="width:12px;height:12px"></i> LOGGED!';
   lucide.createIcons();
   setTimeout(()=>{btn.innerHTML=orig;lucide.createIcons();},2000);
 }
 
-// Revenue
 function showAddRevenue(){
   const f=document.getElementById('add-revenue-form');
   f.style.display=f.style.display==='none'?'grid':'none';
@@ -1075,27 +1138,23 @@ function addRevenue(){
   scheduleDriveSave();
 }
 
-// Utils
 function formatDate(d){return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
 function updateClock(){
   const now=new Date();
-  document.getElementById('clock').textContent=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('date-display').textContent=now.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  var cl=document.getElementById('clock'); // not present in new layout but keep for compat
+  var dd=document.getElementById('date-display');
+  if(dd) dd.textContent=now.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
 }
-
-// Mobile sidebar
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').classList.add('open');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
 
 // Theme toggle
 (function(){
   const t=document.querySelector('[data-theme-toggle]');
   const r=document.documentElement;
-  let d='dark'; // default dark
+  let d='dark';
   r.setAttribute('data-theme',d);
   t&&t.addEventListener('click',()=>{
     d=d==='dark'?'light':'dark';r.setAttribute('data-theme',d);
-    t.innerHTML=d==='dark'?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+    t.innerHTML=d==='dark'?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
   });
 })();
 
@@ -1105,7 +1164,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   if (!loadFromLocalStorage()) renderAll();
   updateClock();
   setInterval(updateClock,10000);
-  document.getElementById('build-badge').textContent = 'build ' + BUILD;
+  document.getElementById('build-badge').textContent = 'v' + BUILD;
   initTelemetry();
   setTimeout(tryAutoReconnect, 800);
 });
@@ -1118,7 +1177,6 @@ var _battery = null;
 var _pingMs = null;
 
 function initTelemetry() {
-  // CPU activity: measure timer drift
   setInterval(function() {
     var now = Date.now();
     var drift = Math.max(0, (now - _lastTimerFire) - 500);
@@ -1127,7 +1185,6 @@ function initTelemetry() {
     renderTelemetry();
   }, 500);
 
-  // Battery
   if (navigator.getBattery) {
     navigator.getBattery().then(function(bat) {
       _battery = bat;
@@ -1136,7 +1193,6 @@ function initTelemetry() {
     });
   }
 
-  // Ping measurement every 8 seconds
   measurePing();
   setInterval(measurePing, 8000);
 }
@@ -1167,7 +1223,6 @@ function renderTelemetry() {
   var sbCpu = document.getElementById('sb-cpu');
   if (sbCpu) sbCpu.textContent = _cpuEst + '%';
 
-  // Network — real ping + connection type
   var sbNet = document.getElementById('sb-net');
   if (netEl) {
     if (!navigator.onLine) {
@@ -1178,8 +1233,7 @@ function renderTelemetry() {
       netEl.textContent = _pingMs + ' ms';
       var conn = navigator.connection;
       var ctype = conn && conn.type && conn.type !== 'unknown' && conn.type !== 'other'
-        ? (conn.type === 'wifi' ? 'WiFi' : conn.type.charAt(0).toUpperCase() + conn.type.slice(1))
-        : '';
+        ? (conn.type === 'wifi' ? 'WiFi' : conn.type.charAt(0).toUpperCase() + conn.type.slice(1)) : '';
       if (netSub) netSub.textContent = ctype || (conn && conn.effectiveType ? conn.effectiveType.toUpperCase() : 'latency');
       if (sbNet) sbNet.textContent = _pingMs + 'ms' + (ctype ? ' · ' + ctype : '');
     } else {
@@ -1189,7 +1243,6 @@ function renderTelemetry() {
     }
   }
 
-  // Battery
   if (_battery && batEl) {
     var pct = Math.round(_battery.level * 100);
     batEl.textContent = pct + '%';
@@ -1207,11 +1260,10 @@ function renderTelemetry() {
   var m = Math.floor((elapsed % 3600) / 60);
   var s = elapsed % 60;
   var uptimeStr = h > 0 ? h + 'h ' + m + 'm' : m > 0 ? m + 'm ' + s + 's' : s + 's';
-  uptimeEl.textContent = uptimeStr;
+  if (uptimeEl) uptimeEl.textContent = uptimeStr;
   var sbUptime = document.getElementById('sb-uptime');
   if (sbUptime) sbUptime.textContent = uptimeStr;
 }
-
 
 var gisClient = null;
 var calToken = null;
@@ -1223,7 +1275,6 @@ const GIS_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly https://www
 
 function onGisToken(resp) {
   if (resp.error) {
-    // silent re-auth failed — clear flag, leave connect button visible
     if (resp.error !== 'interaction_required' && resp.error !== 'access_denied') {
       console.warn('GIS error:', resp.error);
     }
@@ -1263,7 +1314,7 @@ function doSignOut() {
   localStorage.removeItem('scc_google_connected');
   document.getElementById('sync-connect-btn').style.display = '';
   document.getElementById('sync-connected-row').style.display = 'none';
-  document.getElementById('sync-email').textContent = 'Connected';
+  document.getElementById('sync-email').textContent = '';
   document.getElementById('sync-status').textContent = '';
   document.getElementById('signin-section').style.display = '';
   document.getElementById('connected-section').style.display = 'none';
@@ -1457,57 +1508,5 @@ function renderEvent(ev, showDate) {
     '<div><div class="event-name">'+(ev.summary||'(No title)')+'</div>'+
     '<div class="event-cal-tag">'+ev.calName+'</div></div></div>';
 }
-
 </script>
-
-<!-- MOBILE BOTTOM NAV -->
-<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-  <button class="mobile-nav-item active" data-view="dashboard" onclick="navigate('dashboard',null)">
-    <i data-lucide="layout-dashboard" style="width:20px;height:20px"></i>
-    <span>Home</span>
-  </button>
-  <button class="mobile-nav-item" data-view="tasks" onclick="navigate('tasks',null)">
-    <i data-lucide="check-square" style="width:20px;height:20px"></i>
-    <span>Tasks</span>
-  </button>
-  <button class="mobile-nav-item" data-view="projects" onclick="navigate('projects',null)">
-    <i data-lucide="folder-kanban" style="width:20px;height:20px"></i>
-    <span>Projects</span>
-  </button>
-  <button class="mobile-nav-item" data-view="calendar" onclick="navigate('calendar',null)">
-    <i data-lucide="calendar" style="width:20px;height:20px"></i>
-    <span>Calendar</span>
-  </button>
-  <button class="mobile-nav-item" onclick="openSidebar()">
-    <i data-lucide="menu" style="width:20px;height:20px"></i>
-    <span>More</span>
-  </button>
-</nav>
-
-<!-- STATUS BAR -->
-<div class="status-bar" id="status-bar">
-  <div class="status-bar-left">
-    <div class="sb-item">
-      <div class="sb-dot" style="background:var(--color-success)"></div>
-      <span>CPU: <span id="sb-cpu">—</span></span>
-    </div>
-    <div class="sb-item">
-      <div class="sb-dot" style="background:var(--color-blue)"></div>
-      <span>NET: <span id="sb-net">—</span></span>
-    </div>
-    <div class="sb-item">
-      <div class="sb-dot" style="background:var(--color-warning)"></div>
-      <span>BAT: <span id="sb-bat">—</span></span>
-    </div>
-    <div class="sb-item">
-      <div class="sb-dot" style="background:var(--color-primary)"></div>
-      <span>UPTIME: <span id="sb-uptime">—</span></span>
-    </div>
-  </div>
-  <div class="status-bar-right">
-    <span>SECURE_ENCRYPTION_ENABLED</span>
-    <span style="color:var(--color-primary)">CONNECTION_STABLE</span>
-  </div>
-</div>
-
-</body>
+</body></html>
