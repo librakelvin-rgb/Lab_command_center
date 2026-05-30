@@ -122,23 +122,27 @@ select{appearance:none;cursor:pointer}
 .view-inner{padding:var(--space-6)}
 
 /* === DASH GRID === */
-.dash-grid{display:grid;grid-template-columns:3fr 5px 6fr 5px 3fr;grid-template-rows:1fr auto;
+.dash-grid{display:grid;grid-template-columns:3fr 6px 6fr 6px 3fr;grid-template-rows:1fr 6px auto;
   height:calc(100dvh - 52px - 28px);background:var(--color-bg)}
 
 /* === RESIZE DIVIDERS (actual grid items) === */
-.col-divider{background:var(--color-border);cursor:col-resize;user-select:none;
-  transition:background 200ms}
-[data-theme="dark"] .col-divider{background:rgba(58,74,67,0.8)}
-.col-divider:hover,.col-divider.dragging{background:var(--color-primary)!important;opacity:.5}
-.row-divider{background:var(--color-border);cursor:row-resize;user-select:none;
-  transition:background 200ms}
-[data-theme="dark"] .row-divider{background:rgba(58,74,67,0.8)}
-.row-divider:hover,.row-divider.dragging{background:var(--color-primary)!important;opacity:.5}
+.col-divider,.row-divider{user-select:none;transition:background 200ms;position:relative}
+.col-divider{background:rgba(58,74,67,0.6);cursor:col-resize}
+.row-divider{background:rgba(58,74,67,0.6);cursor:row-resize}
+.col-divider:hover,.col-divider.dragging,
+.row-divider:hover,.row-divider.dragging{background:var(--color-primary)!important}
+/* Grab indicator dot */
+.col-divider::after,.row-divider::after{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);width:4px;height:24px;
+  background:var(--color-primary);border-radius:2px;opacity:0;transition:opacity 200ms}
+.row-divider::after{width:24px;height:4px}
+.col-divider:hover::after,.row-divider:hover::after{opacity:.6}
 .dash-cell{background:var(--color-surface);padding:var(--space-5);overflow:hidden;border:1px solid var(--color-border)}
 [data-theme="dark"] .dash-cell{background:#0e1812;border-color:rgba(58,74,67,0.5)}
-.dash-right{padding:0;display:grid;grid-template-rows:1fr 5px 1fr}
+.dash-right{padding:0;display:grid;grid-template-rows:1fr 6px 1fr}
 .dash-right .dash-cell{overflow-y:auto}
-.dash-bottom{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--color-border)}
+.dash-bottom{grid-column:1/-1;display:grid;grid-template-columns:1fr 6px 1fr}
 .dash-bottom-cell{background:var(--color-surface);padding:var(--space-5);overflow:hidden}
 [data-theme="dark"] .dash-bottom-cell{background:#0e1812}
 
@@ -475,7 +479,7 @@ select{appearance:none;cursor:pointer}
           <div class="dossier-grid">
             <div class="dossier-stat">
               <div class="dossier-stat-label">Foundation</div>
-              <div class="dossier-stat-value">2024</div>
+              <div class="dossier-stat-value">2026.5.29</div>
             </div>
             <div class="dossier-stat">
               <div class="dossier-stat-label">Projects</div>
@@ -606,8 +610,11 @@ select{appearance:none;cursor:pointer}
           </div>
         </section>
 
+        <!-- MAIN/BOTTOM ROW DIVIDER -->
+        <div class="row-divider" id="rdiv-main" style="grid-column:1/-1;grid-row:2" title="Drag to resize"></div>
+
         <!-- BOTTOM ROW -->
-        <div class="dash-bottom" style="grid-column:1/-1;grid-row:2">
+        <div class="dash-bottom" style="grid-column:1/-1;grid-row:3">
           <!-- IDEA LAB -->
           <div class="dash-bottom-cell">
             <div class="cell-header">
@@ -619,6 +626,8 @@ select{appearance:none;cursor:pointer}
             </div>
             <div id="idea-lab-preview" style="display:flex;gap:var(--space-3);overflow-x:auto;padding-bottom:4px"></div>
           </div>
+          <!-- BOTTOM COL DIVIDER -->
+          <div class="col-divider" id="bdiv1" title="Drag to resize"></div>
           <!-- QUICK OPS -->
           <div class="dash-bottom-cell">
             <div class="cell-header">
@@ -860,7 +869,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.14';
+const BUILD = '2026-05-30.15';
 
 // === STATE ===
 let tasks = [
@@ -1535,73 +1544,98 @@ function initResizableGrid() {
   var grid = document.getElementById('dash-grid');
   if (!grid || window.innerWidth <= 768) return;
 
-  // Restore saved column widths
+  // Parse computed px values from a grid element's template string
+  // Returns array of numbers, skipping divider entries (e.g. "6px" gaps)
+  function pxVals(el, prop) {
+    return getComputedStyle(el)[prop].split(' ').map(parseFloat);
+  }
+
+  // Generic drag helper — prevents selection, restores cursor
+  function startDrag(el, onMove, onDone) {
+    el.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      document.body.style.userSelect = 'none';
+      var origCursor = document.body.style.cursor;
+      document.body.style.cursor = getComputedStyle(el).cursor;
+      el.classList.add('dragging');
+      function move(e) { onMove(e); }
+      function up() {
+        el.classList.remove('dragging');
+        document.body.style.userSelect = '';
+        document.body.style.cursor = origCursor;
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+        if (onDone) onDone();
+      }
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    });
+  }
+
+  // ── Main grid columns (cdiv1 between cols 0/2, cdiv2 between cols 2/4) ──
   var savedCols = localStorage.getItem('scc_grid_cols');
   if (savedCols) grid.style.gridTemplateColumns = savedCols;
 
-  // Column resize — cdiv1 (between col1 and col3), cdiv2 (between col3 and col5)
-  var colDivs = [document.getElementById('cdiv1'), document.getElementById('cdiv2')];
-  colDivs.forEach(function(div, idx) {
-    if (!div) return;
-    div.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      var startX = e.clientX;
-      // getComputedStyle returns resolved px values for grid-template-columns
-      var cols = getComputedStyle(grid).gridTemplateColumns.split(' ');
-      var c0 = parseFloat(cols[0]);
-      var c2 = parseFloat(cols[2]);
-      var c4 = parseFloat(cols[4]);
-      div.classList.add('dragging');
-      function onMove(e) {
-        var dx = e.clientX - startX;
-        if (idx === 0) {
-          c0 = Math.max(120, parseFloat(cols[0]) + dx);
-          c2 = Math.max(160, parseFloat(cols[2]) - dx);
-        } else {
-          c2 = Math.max(160, parseFloat(cols[2]) + dx);
-          c4 = Math.max(120, parseFloat(cols[4]) - dx);
-        }
-        grid.style.gridTemplateColumns = c0+'px 5px '+c2+'px 5px '+c4+'px';
-      }
-      function onUp() {
-        div.classList.remove('dragging');
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-        localStorage.setItem('scc_grid_cols', grid.style.gridTemplateColumns);
-      }
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+  [['cdiv1', 0, 2], ['cdiv2', 2, 4]].forEach(function(cfg) {
+    var el = document.getElementById(cfg[0]);
+    var li = cfg[1], ri = cfg[2]; // left/right column index in pxVals array
+    if (!el) return;
+    startDrag(el, function(e) {
+      var cols = pxVals(grid, 'gridTemplateColumns');
+      // cols indices: 0=c0, 1=6px, 2=c2, 3=6px, 4=c4
+      var dx = e.movementX || 0;
+      cols[li] = Math.max(120, cols[li] + dx);
+      cols[ri] = Math.max(120, cols[ri] - dx);
+      grid.style.gridTemplateColumns = cols[0]+'px 6px '+cols[2]+'px 6px '+cols[4]+'px';
+    }, function() {
+      localStorage.setItem('scc_grid_cols', grid.style.gridTemplateColumns);
     });
   });
 
-  // Row resize inside right panel
-  var rightPanel = grid.querySelector('.dash-right');
-  var rowDiv = document.getElementById('rdiv1');
-  if (rightPanel && rowDiv) {
-    var savedRows = localStorage.getItem('scc_right_rows');
-    if (savedRows) rightPanel.style.gridTemplateRows = savedRows;
+  // ── Main grid row (rdiv-main between rows 0/2) ──
+  var rdivMain = document.getElementById('rdiv-main');
+  var savedGridRows = localStorage.getItem('scc_grid_rows');
+  if (savedGridRows) grid.style.gridTemplateRows = savedGridRows;
+  if (rdivMain) {
+    startDrag(rdivMain, function(e) {
+      var rows = pxVals(grid, 'gridTemplateRows');
+      rows[0] = Math.max(200, rows[0] + (e.movementY || 0));
+      grid.style.gridTemplateRows = rows[0]+'px 6px auto';
+    }, function() {
+      localStorage.setItem('scc_grid_rows', grid.style.gridTemplateRows);
+    });
+  }
 
-    rowDiv.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      var startY = e.clientY;
-      var rows = getComputedStyle(rightPanel).gridTemplateRows.split(' ');
-      var r0 = parseFloat(rows[0]);
-      var r2 = parseFloat(rows[2]);
-      rowDiv.classList.add('dragging');
-      function onMove(e) {
-        var dy = e.clientY - startY;
-        var nr0 = Math.max(80, r0 + dy);
-        var nr2 = Math.max(80, r2 - dy);
-        rightPanel.style.gridTemplateRows = nr0+'px 5px '+nr2+'px';
-      }
-      function onUp() {
-        rowDiv.classList.remove('dragging');
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-        localStorage.setItem('scc_right_rows', rightPanel.style.gridTemplateRows);
-      }
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+  // ── Right panel rows (rdiv1 between dev-stream / ops-backlog) ──
+  var rightPanel = grid.querySelector('.dash-right');
+  var rdiv1 = document.getElementById('rdiv1');
+  var savedRRows = localStorage.getItem('scc_right_rows');
+  if (savedRRows && rightPanel) rightPanel.style.gridTemplateRows = savedRRows;
+  if (rightPanel && rdiv1) {
+    startDrag(rdiv1, function(e) {
+      var rows = pxVals(rightPanel, 'gridTemplateRows');
+      rows[0] = Math.max(80, rows[0] + (e.movementY || 0));
+      rows[2] = Math.max(80, rows[2] - (e.movementY || 0));
+      rightPanel.style.gridTemplateRows = rows[0]+'px 6px '+rows[2]+'px';
+    }, function() {
+      localStorage.setItem('scc_right_rows', rightPanel.style.gridTemplateRows);
+    });
+  }
+
+  // ── Bottom row columns (bdiv1 between idea-lab / quick-ops) ──
+  var bottomRow = grid.querySelector('.dash-bottom');
+  var bdiv1 = document.getElementById('bdiv1');
+  var savedBCols = localStorage.getItem('scc_bottom_cols');
+  if (savedBCols && bottomRow) bottomRow.style.gridTemplateColumns = savedBCols;
+  if (bottomRow && bdiv1) {
+    startDrag(bdiv1, function(e) {
+      var cols = pxVals(bottomRow, 'gridTemplateColumns');
+      cols[0] = Math.max(150, cols[0] + (e.movementX || 0));
+      cols[2] = Math.max(150, cols[2] - (e.movementX || 0));
+      bottomRow.style.gridTemplateColumns = cols[0]+'px 6px '+cols[2]+'px';
+    }, function() {
+      localStorage.setItem('scc_bottom_cols', bottomRow.style.gridTemplateColumns);
     });
   }
 }
