@@ -1563,11 +1563,20 @@ function initPanelResize() {
       out[p.id] = { r: getRowSpan(p), c: getColSpan(p) };
     });
     localStorage.setItem('scc_panel_spans', JSON.stringify(out));
+    localStorage.setItem('scc_panel_spans_ver', SPANS_VER);
   }
 
-  // Restore saved spans
+  // Restore saved spans (version bump clears stale data when defaults change)
+  var SPANS_VER = '2';
   var saved = {};
-  try { saved = JSON.parse(localStorage.getItem('scc_panel_spans') || '{}'); } catch(e) {}
+  try {
+    if (localStorage.getItem('scc_panel_spans_ver') === SPANS_VER) {
+      saved = JSON.parse(localStorage.getItem('scc_panel_spans') || '{}');
+    } else {
+      localStorage.removeItem('scc_panel_spans');
+      localStorage.setItem('scc_panel_spans_ver', SPANS_VER);
+    }
+  } catch(e) {}
   document.querySelectorAll('#dash-grid .panel').forEach(function(p) {
     if (saved[p.id]) {
       setRowSpan(p, Math.max(1, Math.min(MAX_ROWS, +saved[p.id].r || 1)));
