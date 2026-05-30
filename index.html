@@ -123,7 +123,22 @@ select{appearance:none;cursor:pointer}
 
 /* === DASH GRID === */
 .dash-grid{display:grid;grid-template-columns:3fr 6fr 3fr;grid-template-rows:1fr auto;
-  height:calc(100dvh - 52px - 28px);gap:1px;background:var(--color-border)}
+  height:calc(100dvh - 52px - 28px);gap:1px;background:var(--color-border);position:relative}
+
+/* === RESIZE HANDLES === */
+.resize-handle{position:absolute;z-index:200;cursor:col-resize;background:transparent;
+  transition:background 150ms}
+.resize-handle.v{top:0;width:8px;transform:translateX(-50%)}
+.resize-handle.h{left:0;right:0;height:8px;cursor:row-resize;transform:translateY(-50%)}
+.resize-handle:hover,.resize-handle.dragging{background:rgba(0,225,171,0.15)}
+.resize-handle::after{content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);background:var(--color-primary);opacity:0;
+  transition:opacity 150ms;border-radius:2px}
+.resize-handle.v::after{width:2px;height:32px}
+.resize-handle.h::after{height:2px;width:32px}
+.resize-handle:hover::after,.resize-handle.dragging::after{opacity:0.5}
+/* right-panel row handle lives inside the right section */
+.dash-right{position:relative}
 .dash-cell{background:var(--color-surface);padding:var(--space-5);overflow:hidden}
 [data-theme="dark"] .dash-cell{background:#0e1812}
 .dash-right{padding:0;display:grid;grid-template-rows:1fr 1fr;gap:1px;background:var(--color-border)}
@@ -411,6 +426,7 @@ select{appearance:none;cursor:pointer}
       <div class="topbar-live">
         <span class="sb-dot pulse-live" style="background:var(--color-success)"></span>
         SYSTEM LIVE <span id="build-badge" style="opacity:.4;font-weight:400;margin-left:4px;font-size:10px"></span>
+        <span id="commit-desc" style="opacity:.4;font-weight:400;font-size:10px;letter-spacing:.03em;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
       </div>
     </div>
 
@@ -460,7 +476,7 @@ select{appearance:none;cursor:pointer}
             <button style="color:var(--color-text-faint)" onclick="navigate('projects',document.querySelector('[data-view=projects]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
           </div>
           <div class="dossier-org-label">Organization Name</div>
-          <div class="dossier-name">Tiny Studio</div>
+          <div class="dossier-name">BloomyCraft Labs</div>
           <div class="dossier-grid">
             <div class="dossier-stat">
               <div class="dossier-stat-label">Foundation</div>
@@ -841,7 +857,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.11';
+const BUILD = '2026-05-30.12';
 
 // === STATE ===
 let tasks = [
@@ -1167,6 +1183,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('build-badge').textContent = 'v' + BUILD;
   initTelemetry();
   setTimeout(tryAutoReconnect, 800);
+  setTimeout(initResizeHandles, 100);
+  fetchCommitInfo();
 });
 
 // === SYSTEM PULSE TELEMETRY ===
@@ -1507,6 +1525,129 @@ function renderEvent(ev, showDate) {
     '<div class="event-time-col">'+dateStr+fmtTime(ev)+'</div>'+
     '<div><div class="event-name">'+(ev.summary||'(No title)')+'</div>'+
     '<div class="event-cal-tag">'+ev.calName+'</div></div></div>';
+}
+
+// === RESIZABLE GRID PANELS ===
+function initResizeHandles() {
+  var grid = document.getElementById('dash-grid');
+  if (!grid || window.innerWidth <= 768) return;
+
+  // Restore saved column widths
+  var saved = localStorage.getItem('scc_grid_cols');
+  if (saved) grid.style.gridTemplateColumns = saved;
+
+  // Create column drag handles (between col1/2 and col2/3)
+  function makeColHandle(id) {
+    var h = document.createElement('div');
+    h.className = 'resize-handle v'; h.id = id;
+    grid.appendChild(h);
+    return h;
+  }
+  var ch1 = makeColHandle('crh1');
+  var ch2 = makeColHandle('crh2');
+
+  // Create row handle inside right panel (between dev stream / ops backlog)
+  var rightPanel = grid.querySelector('.dash-right');
+  var rh = document.createElement('div');
+  rh.className = 'resize-handle h'; rh.id = 'rrh1';
+  rightPanel.appendChild(rh);
+
+  function positionHandles() {
+    var gr = grid.getBoundingClientRect();
+    // Find the 3 main cells: first .dash-cell, second .dash-cell, .dash-right
+    var cells = grid.querySelectorAll(':scope > .dash-cell, :scope > .dash-right');
+    if (cells.length < 3) return;
+    var r0 = cells[0].getBoundingClientRect();
+    var r1 = cells[1].getBoundingClientRect();
+    var r2 = cells[2].getBoundingClientRect();
+    ch1.style.left = (r0.right - gr.left) + 'px';
+    ch1.style.top = '0'; ch1.style.height = r0.height + 'px';
+    ch2.style.left = (r1.right - gr.left) + 'px';
+    ch2.style.top = '0'; ch2.style.height = r1.height + 'px';
+    // row handle in right panel
+    var rightCells = rightPanel.querySelectorAll(':scope > .dash-cell');
+    if (rightCells.length >= 1) {
+      var rc = rightCells[0].getBoundingClientRect();
+      rh.style.top = (rc.bottom - rightPanel.getBoundingClientRect().top) + 'px';
+      rh.style.left = '0'; rh.style.right = '0';
+    }
+  }
+  positionHandles();
+  window.addEventListener('resize', positionHandles);
+
+  function startColDrag(handle, colIdx) {
+    handle.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      var startX = e.clientX;
+      var cols = getComputedStyle(grid).gridTemplateColumns.split(' ').map(parseFloat);
+      handle.classList.add('dragging');
+      function onMove(ev) {
+        var dx = ev.clientX - startX;
+        var c = cols.slice();
+        if (colIdx === 0) {
+          c[0] = Math.max(140, c[0] + dx); c[1] = Math.max(180, c[1] - dx);
+        } else {
+          c[1] = Math.max(180, c[1] + dx); c[2] = Math.max(140, c[2] - dx);
+        }
+        grid.style.gridTemplateColumns = c.map(function(v){return v+'px';}).join(' ');
+        positionHandles();
+      }
+      function onUp() {
+        handle.classList.remove('dragging');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        localStorage.setItem('scc_grid_cols', grid.style.gridTemplateColumns);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+  startColDrag(ch1, 0);
+  startColDrag(ch2, 1);
+
+  // Row drag inside right panel
+  rh.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    var startY = e.clientY;
+    var rows = getComputedStyle(rightPanel).gridTemplateRows.split(' ').map(parseFloat);
+    if (rows.some(isNaN)) rows = [rightPanel.offsetHeight/2, rightPanel.offsetHeight/2];
+    rh.classList.add('dragging');
+    function onMove(ev) {
+      var dy = ev.clientY - startY;
+      var r0 = Math.max(80, rows[0] + dy);
+      var r1 = Math.max(80, rows[1] - dy);
+      rightPanel.style.gridTemplateRows = r0+'px '+r1+'px';
+      var rightCells = rightPanel.querySelectorAll(':scope > .dash-cell');
+      if (rightCells.length >= 1) {
+        rh.style.top = rightCells[0].getBoundingClientRect().bottom - rightPanel.getBoundingClientRect().top + 'px';
+      }
+    }
+    function onUp() {
+      rh.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      localStorage.setItem('scc_right_rows', rightPanel.style.gridTemplateRows);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // Restore right panel row split
+  var savedRR = localStorage.getItem('scc_right_rows');
+  if (savedRR) rightPanel.style.gridTemplateRows = savedRR;
+}
+
+// === COMMIT INFO ===
+async function fetchCommitInfo() {
+  try {
+    var res = await fetch('https://api.github.com/repos/librakelvin-rgb/Lab_command_center/commits/main');
+    if (!res.ok) return;
+    var data = await res.json();
+    var msg = data.commit.message.split('\n')[0].substring(0, 60);
+    var sha = data.sha.substring(0, 7);
+    var el = document.getElementById('commit-desc');
+    if (el) el.textContent = sha + ' · ' + msg;
+  } catch(e) {}
 }
 </script>
 </body></html>
