@@ -1532,6 +1532,8 @@ function renderEvent(ev, showDate) {
 function initPanelResize() {
   var grid = document.getElementById('dash-grid');
   if (!grid || window.innerWidth <= 768) return;
+  localStorage.removeItem('scc_panel_spans');
+  localStorage.removeItem('scc_panel_spans_ver');
 
   var ROW_STEP = 80;  // px drag = 1 span unit (matches worldmonitor)
   var COL_STEP = 80;
@@ -1556,33 +1558,6 @@ function initPanelResize() {
     p.classList.add('col-span-'+n);
   }
 
-  // --- persistence ---
-  function saveSpans() {
-    var out = {};
-    document.querySelectorAll('#dash-grid .panel').forEach(function(p) {
-      out[p.id] = { r: getRowSpan(p), c: getColSpan(p) };
-    });
-    localStorage.setItem('scc_panel_spans', JSON.stringify(out));
-    localStorage.setItem('scc_panel_spans_ver', SPANS_VER);
-  }
-
-  // Restore saved spans (version bump clears stale data when defaults change)
-  var SPANS_VER = '2';
-  var saved = {};
-  try {
-    if (localStorage.getItem('scc_panel_spans_ver') === SPANS_VER) {
-      saved = JSON.parse(localStorage.getItem('scc_panel_spans') || '{}');
-    } else {
-      localStorage.removeItem('scc_panel_spans');
-      localStorage.setItem('scc_panel_spans_ver', SPANS_VER);
-    }
-  } catch(e) {}
-  document.querySelectorAll('#dash-grid .panel').forEach(function(p) {
-    if (saved[p.id]) {
-      setRowSpan(p, Math.max(1, Math.min(MAX_ROWS, +saved[p.id].r || 1)));
-      setColSpan(p, Math.max(1, Math.min(MAX_COLS, +saved[p.id].c || 1)));
-    }
-  });
 
   // --- height resize (bottom handle .prh) ---
   document.querySelectorAll('#dash-grid .prh').forEach(function(handle) {
@@ -1605,7 +1580,6 @@ function initPanelResize() {
         document.body.style.userSelect = '';
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
-        saveSpans();
       }
       document.body.style.userSelect = 'none';
       document.addEventListener('mousemove', onMove);
@@ -1634,7 +1608,6 @@ function initPanelResize() {
         document.body.style.userSelect = '';
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
-        saveSpans();
       }
       document.body.style.userSelect = 'none';
       document.addEventListener('mousemove', onMove);
