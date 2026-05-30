@@ -148,29 +148,44 @@ select{appearance:none;cursor:pointer}
 
 /* === PANEL RESIZE HANDLES === */
 /* Height handle — bottom strip */
+/* Height handle */
 .prh{
-  position:absolute;bottom:0;left:0;right:0;height:14px;
-  cursor:ns-resize;z-index:20;
-  background:linear-gradient(to bottom,transparent,rgba(0,225,171,0.04));
-  display:flex;align-items:center;justify-content:center}
-.prh::after{
-  content:'';width:28px;height:2px;
-  background:var(--color-primary);border-radius:1px;
-  opacity:0;transition:opacity 150ms}
-.prh:hover{background:linear-gradient(to bottom,transparent,rgba(0,225,171,0.15))}
-.prh:hover::after,.prh.dragging::after{opacity:.7}
-/* Width handle — right strip */
+  position:absolute;bottom:0;left:0;right:0;height:20px;
+  cursor:ns-resize;z-index:100;
+  pointer-events:auto !important;user-select:none;touch-action:none;
+  background:linear-gradient(to top,rgba(0,225,171,0.12),transparent);
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;
+  transition:background 200ms}
+.prh::after{content:"⋯";font-size:14px;letter-spacing:2px;
+  color:var(--color-primary);opacity:0;transition:opacity 200ms}
+.prh:hover{background:linear-gradient(to top,rgba(0,225,171,0.35),transparent)}
+.prh:hover::after,.prh.active{opacity:.8}
+/* Width handle */
 .prw{
-  position:absolute;right:0;top:0;bottom:14px;width:14px;
-  cursor:ew-resize;z-index:20;
-  background:linear-gradient(to right,transparent,rgba(0,225,171,0.04));
-  display:flex;align-items:center;justify-content:center}
-.prw::after{
-  content:'';height:28px;width:2px;
-  background:var(--color-primary);border-radius:1px;
-  opacity:0;transition:opacity 150ms}
-.prw:hover{background:linear-gradient(to right,transparent,rgba(0,225,171,0.15))}
-.prw:hover::after,.prw.dragging::after{opacity:.7}
+  position:absolute;right:0;top:0;bottom:20px;width:20px;
+  cursor:ew-resize;z-index:100;
+  pointer-events:auto !important;user-select:none;touch-action:none;
+  background:linear-gradient(to left,rgba(0,225,171,0.12),transparent);
+  display:flex;align-items:center;justify-content:flex-end;padding-right:3px;
+  transition:background 200ms}
+.prw::after{content:"⋮";font-size:14px;letter-spacing:2px;
+  color:var(--color-primary);opacity:0;transition:opacity 200ms;writing-mode:horizontal-tb}
+.prw:hover{background:linear-gradient(to left,rgba(0,225,171,0.35),transparent)}
+.prw:hover::after,.prw.active{opacity:.8}
+body.panel-resize-active{cursor:ns-resize !important}
+body.panel-col-resize-active{cursor:ew-resize !important}
+/* Span classes — using !important so they always override initial inline styles */
+.panel.span-1{grid-row:span 1 !important}
+.panel.span-2{grid-row:span 2 !important}
+.panel.span-3{grid-row:span 3 !important}
+.panel.span-4{grid-row:span 4 !important}
+.panel.span-5{grid-row:span 5 !important}
+.panel.span-6{grid-row:span 6 !important}
+.panel.span-7{grid-row:span 7 !important}
+.panel.span-8{grid-row:span 8 !important}
+.panel.col-span-1{grid-column:span 1 !important}
+.panel.col-span-2{grid-column:span 2 !important}
+.panel.col-span-3{grid-column:span 3 !important}
 
 /* === CELL HEADERS === */
 .cell-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-4)}
@@ -495,7 +510,7 @@ select{appearance:none;cursor:pointer}
       <div class="dash-grid" id="dash-grid">
 
         <!-- ENTITY DOSSIER: col-span-1, row-span-4 -->
-        <div class="panel" id="panel-dossier" style="grid-column:span 1;grid-row:span 4">
+        <div class="panel col-span-1 span-4" id="panel-dossier">
           <div class="panel-header">
             <div class="cell-title"><i data-lucide="fingerprint" style="width:13px;height:13px"></i> ENTITY DOSSIER</div>
             <button style="color:var(--color-text-faint)" onclick="navigate('projects',document.querySelector('[data-view=projects]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
@@ -526,7 +541,7 @@ select{appearance:none;cursor:pointer}
         </div>
 
         <!-- STUDIO HUB: col-span-1, row-span-4 -->
-        <div class="panel" id="panel-hub" style="grid-column:span 1;grid-row:span 4">
+        <div class="panel col-span-1 span-4" id="panel-hub">
           <div class="panel-header">
             <div><div class="cell-title">STUDIO HUB</div><div style="font-size:10px;color:var(--color-primary);font-family:var(--font-mono);margin-top:2px">PROJECT_FEED // TASK_STREAM</div></div>
             <div style="text-align:right"><div style="font-size:10px;text-transform:uppercase;color:var(--color-text-faint);font-family:var(--font-mono)">Projects</div><div style="font-size:1.4rem;font-weight:700;font-family:var(--font-display);color:var(--color-text);line-height:1" id="hub-total">6</div></div>
@@ -554,7 +569,7 @@ select{appearance:none;cursor:pointer}
         </div>
 
         <!-- DEV STREAM: col-span-1, row-span-2 -->
-        <div class="panel" id="panel-devstream" style="grid-column:span 1;grid-row:span 2">
+        <div class="panel col-span-1 span-2" id="panel-devstream">
           <div class="panel-header">
             <div class="cell-title" style="color:var(--color-blue)"><i data-lucide="terminal" style="width:13px;height:13px"></i> DEV STREAM</div>
             <button style="color:var(--color-text-faint)" onclick="navigate('devlog',document.querySelector('[data-view=devlog]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
@@ -565,7 +580,7 @@ select{appearance:none;cursor:pointer}
         </div>
 
         <!-- OPS BACKLOG: col-span-1, row-span-2 -->
-        <div class="panel" id="panel-backlog" style="grid-column:span 1;grid-row:span 2">
+        <div class="panel col-span-1 span-2" id="panel-backlog">
           <div class="panel-header">
             <div class="cell-title" style="color:var(--color-warning)"><i data-lucide="alert-triangle" style="width:13px;height:13px"></i> OPS BACKLOG</div>
             <button style="color:var(--color-text-faint)" onclick="navigate('tasks',document.querySelector('[data-view=tasks]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
@@ -576,7 +591,7 @@ select{appearance:none;cursor:pointer}
         </div>
 
         <!-- IDEA LAB: col-span-2, row-span-2 -->
-        <div class="panel" id="panel-ideas" style="grid-column:span 2;grid-row:span 2">
+        <div class="panel col-span-2 span-2" id="panel-ideas">
           <div class="panel-header">
             <div class="cell-title"><i data-lucide="lightbulb" style="width:13px;height:13px"></i> IDEA LAB</div>
             <div style="display:flex;gap:var(--space-2)">
@@ -590,7 +605,7 @@ select{appearance:none;cursor:pointer}
         </div>
 
         <!-- QUICK OPS: col-span-1, row-span-2 -->
-        <div class="panel" id="panel-quickops" style="grid-column:span 1;grid-row:span 2">
+        <div class="panel col-span-1 span-2" id="panel-quickops">
           <div class="panel-header">
             <div class="cell-title"><i data-lucide="zap" style="width:13px;height:13px"></i> QUICK OPS</div>
           </div>
@@ -823,7 +838,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.17';
+const BUILD = '2026-05-30.18';
 
 // === STATE ===
 let tasks = [
@@ -1498,86 +1513,101 @@ function initPanelResize() {
   var grid = document.getElementById('dash-grid');
   if (!grid || window.innerWidth <= 768) return;
 
-  var ROW_STEP = 120; // px per grid-auto-row unit
+  var ROW_STEP = 80;  // px drag = 1 span unit (matches worldmonitor)
+  var COL_STEP = 80;
   var MAX_ROWS = 8;
   var MAX_COLS = 3;
 
-  // Restore saved panel spans
+  // --- span helpers (class-based, with !important via CSS) ---
+  function getRowSpan(p) {
+    for (var i = MAX_ROWS; i >= 1; i--) if (p.classList.contains('span-'+i)) return i;
+    return 1;
+  }
+  function setRowSpan(p, n) {
+    for (var i = 1; i <= MAX_ROWS; i++) p.classList.remove('span-'+i);
+    p.classList.add('span-'+n);
+  }
+  function getColSpan(p) {
+    for (var i = MAX_COLS; i >= 1; i--) if (p.classList.contains('col-span-'+i)) return i;
+    return 1;
+  }
+  function setColSpan(p, n) {
+    for (var i = 1; i <= MAX_COLS; i++) p.classList.remove('col-span-'+i);
+    p.classList.add('col-span-'+n);
+  }
+
+  // --- persistence ---
+  function saveSpans() {
+    var out = {};
+    document.querySelectorAll('#dash-grid .panel').forEach(function(p) {
+      out[p.id] = { r: getRowSpan(p), c: getColSpan(p) };
+    });
+    localStorage.setItem('scc_panel_spans', JSON.stringify(out));
+  }
+
+  // Restore saved spans
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem('scc_panel_spans') || '{}'); } catch(e) {}
   document.querySelectorAll('#dash-grid .panel').forEach(function(p) {
     if (saved[p.id]) {
-      p.style.gridColumn = 'span ' + saved[p.id].c;
-      p.style.gridRow    = 'span ' + saved[p.id].r;
+      setRowSpan(p, Math.max(1, Math.min(MAX_ROWS, +saved[p.id].r || 1)));
+      setColSpan(p, Math.max(1, Math.min(MAX_COLS, +saved[p.id].c || 1)));
     }
   });
 
-  function saveSpans() {
-    var spans = {};
-    document.querySelectorAll('#dash-grid .panel').forEach(function(p) {
-      var cs = parseInt((p.style.gridColumn || '').replace('span ','')) || 1;
-      var rs = parseInt((p.style.gridRow    || '').replace('span ','')) || 1;
-      spans[p.id] = {c: cs, r: rs};
-    });
-    localStorage.setItem('scc_panel_spans', JSON.stringify(spans));
-  }
-
-  // Height resize — bottom handle (.prh)
+  // --- height resize (bottom handle .prh) ---
   document.querySelectorAll('#dash-grid .prh').forEach(function(handle) {
     var panel = document.getElementById(handle.dataset.panel);
     if (!panel) return;
     handle.addEventListener('mousedown', function(e) {
       if (e.button !== 0) return;
       e.preventDefault();
-      document.body.style.userSelect = 'none';
-      document.body.style.cursor = 'ns-resize';
-      handle.classList.add('dragging');
+      handle.classList.add('active');
+      document.body.classList.add('panel-resize-active');
       var startY = e.clientY;
-      var startH = panel.getBoundingClientRect().height;
+      var startSpan = getRowSpan(panel);
       function onMove(e) {
-        var newH = startH + (e.clientY - startY);
-        var newSpan = Math.max(1, Math.min(MAX_ROWS, Math.round(newH / ROW_STEP)));
-        panel.style.gridRow = 'span ' + newSpan;
+        var n = Math.max(1, Math.min(MAX_ROWS, startSpan + Math.round((e.clientY - startY) / ROW_STEP)));
+        if (n !== getRowSpan(panel)) setRowSpan(panel, n);
       }
       function onUp() {
-        handle.classList.remove('dragging');
+        handle.classList.remove('active');
+        document.body.classList.remove('panel-resize-active');
         document.body.style.userSelect = '';
-        document.body.style.cursor = '';
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
         saveSpans();
       }
+      document.body.style.userSelect = 'none';
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     });
   });
 
-  // Width resize — right handle (.prw)
+  // --- width resize (right handle .prw) ---
   document.querySelectorAll('#dash-grid .prw').forEach(function(handle) {
     var panel = document.getElementById(handle.dataset.panel);
     if (!panel) return;
     handle.addEventListener('mousedown', function(e) {
       if (e.button !== 0) return;
       e.preventDefault();
-      document.body.style.userSelect = 'none';
-      document.body.style.cursor = 'ew-resize';
-      handle.classList.add('dragging');
+      handle.classList.add('active');
+      document.body.classList.add('panel-col-resize-active');
       var startX = e.clientX;
-      var startW = panel.getBoundingClientRect().width;
-      var colW   = grid.getBoundingClientRect().width / MAX_COLS;
+      var startSpan = getColSpan(panel);
       function onMove(e) {
-        var newW = startW + (e.clientX - startX);
-        var newSpan = Math.max(1, Math.min(MAX_COLS, Math.round(newW / colW)));
-        panel.style.gridColumn = 'span ' + newSpan;
+        var n = Math.max(1, Math.min(MAX_COLS, startSpan + Math.round((e.clientX - startX) / COL_STEP)));
+        if (n !== getColSpan(panel)) setColSpan(panel, n);
       }
       function onUp() {
-        handle.classList.remove('dragging');
+        handle.classList.remove('active');
+        document.body.classList.remove('panel-col-resize-active');
         document.body.style.userSelect = '';
-        document.body.style.cursor = '';
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
         saveSpans();
       }
+      document.body.style.userSelect = 'none';
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     });
