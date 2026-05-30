@@ -174,6 +174,19 @@ select{appearance:none;cursor:pointer}
 .prw:hover::after,.prw.active{opacity:.8}
 body.panel-resize-active{cursor:ns-resize !important}
 body.panel-col-resize-active{cursor:ew-resize !important}
+/* === PANEL DRAG & DROP === */
+.panel-drag-handle{
+  cursor:grab;padding:0 6px 0 2px;color:var(--color-text-faint);
+  display:flex;align-items:center;user-select:none;touch-action:none;
+  opacity:.4;transition:opacity 150ms, color 150ms;font-size:15px;flex-shrink:0}
+.panel-drag-handle:hover{opacity:1;color:var(--color-primary)}
+.panel-drag-handle:active{cursor:grabbing}
+.panel.panel-drop-target{
+  outline:2px dashed rgba(0,225,171,0.55);outline-offset:-3px}
+.panel.panel-dragging-source{opacity:.25;pointer-events:none}
+body.panel-drag-active{cursor:grabbing !important}
+body.panel-drag-active .prh,
+body.panel-drag-active .prw{pointer-events:none !important}
 /* Span classes — using !important so they always override initial inline styles */
 .panel.span-1{grid-row:span 1 !important}
 .panel.span-2{grid-row:span 2 !important}
@@ -512,6 +525,7 @@ body.panel-col-resize-active{cursor:ew-resize !important}
         <!-- ENTITY DOSSIER: col-span-1, row-span-4 -->
         <div class="panel col-span-1 span-4" id="panel-dossier">
           <div class="panel-header">
+            <div class="panel-drag-handle" title="Drag to reorder">&#x2807;</div>
             <div class="cell-title"><i data-lucide="fingerprint" style="width:13px;height:13px"></i> ENTITY DOSSIER</div>
             <button style="color:var(--color-text-faint)" onclick="navigate('projects',document.querySelector('[data-view=projects]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
           </div>
@@ -543,6 +557,7 @@ body.panel-col-resize-active{cursor:ew-resize !important}
         <!-- STUDIO HUB: col-span-1, row-span-4 -->
         <div class="panel col-span-1 span-4" id="panel-hub">
           <div class="panel-header">
+            <div class="panel-drag-handle" title="Drag to reorder">&#x2807;</div>
             <div><div class="cell-title">STUDIO HUB</div><div style="font-size:10px;color:var(--color-primary);font-family:var(--font-mono);margin-top:2px">PROJECT_FEED // TASK_STREAM</div></div>
             <div style="text-align:right"><div style="font-size:10px;text-transform:uppercase;color:var(--color-text-faint);font-family:var(--font-mono)">Projects</div><div style="font-size:1.4rem;font-weight:700;font-family:var(--font-display);color:var(--color-text);line-height:1" id="hub-total">6</div></div>
           </div>
@@ -571,6 +586,7 @@ body.panel-col-resize-active{cursor:ew-resize !important}
         <!-- DEV STREAM: col-span-1, row-span-2 -->
         <div class="panel col-span-1 span-2" id="panel-devstream">
           <div class="panel-header">
+            <div class="panel-drag-handle" title="Drag to reorder">&#x2807;</div>
             <div class="cell-title" style="color:var(--color-blue)"><i data-lucide="terminal" style="width:13px;height:13px"></i> DEV STREAM</div>
             <button style="color:var(--color-text-faint)" onclick="navigate('devlog',document.querySelector('[data-view=devlog]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
           </div>
@@ -582,6 +598,7 @@ body.panel-col-resize-active{cursor:ew-resize !important}
         <!-- OPS BACKLOG: col-span-1, row-span-2 -->
         <div class="panel col-span-1 span-2" id="panel-backlog">
           <div class="panel-header">
+            <div class="panel-drag-handle" title="Drag to reorder">&#x2807;</div>
             <div class="cell-title" style="color:var(--color-warning)"><i data-lucide="alert-triangle" style="width:13px;height:13px"></i> OPS BACKLOG</div>
             <button style="color:var(--color-text-faint)" onclick="navigate('tasks',document.querySelector('[data-view=tasks]'))"><i data-lucide="external-link" style="width:13px;height:13px"></i></button>
           </div>
@@ -593,6 +610,7 @@ body.panel-col-resize-active{cursor:ew-resize !important}
         <!-- IDEA LAB: col-span-2, row-span-2 -->
         <div class="panel col-span-2 span-2" id="panel-ideas">
           <div class="panel-header">
+            <div class="panel-drag-handle" title="Drag to reorder">&#x2807;</div>
             <div class="cell-title"><i data-lucide="lightbulb" style="width:13px;height:13px"></i> IDEA LAB</div>
             <div style="display:flex;gap:var(--space-2)">
               <button class="btn btn-ghost btn-sm" onclick="navigate('ideas',document.querySelector('[data-view=ideas]'))">View all</button>
@@ -607,6 +625,7 @@ body.panel-col-resize-active{cursor:ew-resize !important}
         <!-- QUICK OPS: col-span-1, row-span-2 -->
         <div class="panel col-span-1 span-2" id="panel-quickops">
           <div class="panel-header">
+            <div class="panel-drag-handle" title="Drag to reorder">&#x2807;</div>
             <div class="cell-title"><i data-lucide="zap" style="width:13px;height:13px"></i> QUICK OPS</div>
           </div>
           <div class="panel-body">
@@ -838,7 +857,7 @@ body.panel-col-resize-active{cursor:ew-resize !important}
 </div>
 
 <script>
-const BUILD = '2026-05-30.18';
+const BUILD = '2026-05-30.19';
 
 // === STATE ===
 let tasks = [
@@ -1165,6 +1184,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   initTelemetry();
   setTimeout(tryAutoReconnect, 800);
   initPanelResize();
+  initPanelDrag();
   fetchCommitInfo();
 });
 
@@ -1612,6 +1632,123 @@ function initPanelResize() {
       document.addEventListener('mouseup', onUp);
     });
   });
+}
+
+// === PANEL DRAG & DROP ===
+function initPanelDrag() {
+  var grid = document.getElementById('dash-grid');
+  if (!grid) return;
+
+  var dragging = null;   // source panel
+  var ghost    = null;   // fixed-position visual clone
+  var dropTarget = null; // panel currently under cursor
+  var offX = 0, offY = 0;
+
+  // Restore saved panel order
+  var savedOrder;
+  try { savedOrder = JSON.parse(localStorage.getItem('scc_panel_order') || 'null'); } catch(e) {}
+  if (savedOrder && savedOrder.length) {
+    savedOrder.forEach(function(id) {
+      var p = document.getElementById(id);
+      if (p && p.parentNode === grid) grid.appendChild(p);
+    });
+  }
+
+  // Attach mousedown to every drag handle
+  grid.addEventListener('mousedown', function(e) {
+    var handle = e.target.closest('.panel-drag-handle');
+    if (!handle) return;
+    var panel = handle.closest('.panel');
+    if (!panel) return;
+    if (e.button !== 0) return;
+    e.preventDefault();
+
+    dragging = panel;
+    var r = panel.getBoundingClientRect();
+    offX = e.clientX - r.left;
+    offY = e.clientY - r.top;
+
+    // Build ghost: a lightly styled floating copy
+    ghost = document.createElement('div');
+    ghost.className = 'panel';
+    ghost.style.cssText = [
+      'position:fixed', 'pointer-events:none', 'z-index:9999',
+      'opacity:0.75', 'border:2px solid rgba(0,225,171,0.7)',
+      'box-shadow:0 12px 40px rgba(0,0,0,0.6)',
+      'width:' + r.width + 'px', 'height:' + r.height + 'px',
+      'left:' + r.left + 'px', 'top:' + r.top + 'px',
+      'background:#0e1812', 'overflow:hidden', 'transition:none'
+    ].join(';');
+    // Show panel title in ghost
+    var titleEl = panel.querySelector('.cell-title');
+    ghost.innerHTML = '<div style="padding:10px 14px;font-family:var(--font-mono);font-size:11px;color:var(--color-primary);text-transform:uppercase;letter-spacing:.1em;opacity:.8">'
+      + (titleEl ? titleEl.textContent.trim() : '') + '</div>';
+    document.body.appendChild(ghost);
+
+    panel.classList.add('panel-dragging-source');
+    document.body.classList.add('panel-drag-active');
+    document.body.style.userSelect = 'none';
+
+    document.addEventListener('mousemove', onDragMove);
+    document.addEventListener('mouseup', onDragUp);
+  });
+
+  function onDragMove(e) {
+    if (!ghost) return;
+    ghost.style.left = (e.clientX - offX) + 'px';
+    ghost.style.top  = (e.clientY - offY) + 'px';
+
+    // Clear previous highlight
+    if (dropTarget) { dropTarget.classList.remove('panel-drop-target'); dropTarget = null; }
+
+    // Find panel under cursor (excluding the source)
+    var panels = Array.from(grid.querySelectorAll('.panel'));
+    for (var i = 0; i < panels.length; i++) {
+      if (panels[i] === dragging) continue;
+      var r = panels[i].getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right &&
+          e.clientY >= r.top  && e.clientY <= r.bottom) {
+        dropTarget = panels[i];
+        dropTarget.classList.add('panel-drop-target');
+        break;
+      }
+    }
+  }
+
+  function onDragUp(e) {
+    if (!dragging) return;
+
+    // Clean up ghost
+    if (ghost) { ghost.remove(); ghost = null; }
+    dragging.classList.remove('panel-dragging-source');
+    document.body.classList.remove('panel-drag-active');
+    document.body.style.userSelect = '';
+
+    // Perform the swap
+    if (dropTarget && dropTarget !== dragging) {
+      dropTarget.classList.remove('panel-drop-target');
+      // Determine insertion order
+      var nodes = Array.from(grid.querySelectorAll('.panel'));
+      var si = nodes.indexOf(dragging);
+      var di = nodes.indexOf(dropTarget);
+      if (si < di) {
+        grid.insertBefore(dragging, dropTarget.nextSibling);
+      } else {
+        grid.insertBefore(dragging, dropTarget);
+      }
+    } else if (dropTarget) {
+      dropTarget.classList.remove('panel-drop-target');
+    }
+
+    document.removeEventListener('mousemove', onDragMove);
+    document.removeEventListener('mouseup', onDragUp);
+
+    // Persist new order
+    var order = Array.from(grid.querySelectorAll('.panel')).map(function(p) { return p.id; });
+    localStorage.setItem('scc_panel_order', JSON.stringify(order));
+
+    dragging = null; dropTarget = null;
+  }
 }
 
 // === COMMIT INFO ===
