@@ -238,11 +238,11 @@ body.panel-drag-active .prw{pointer-events:none !important}
 .backlog-meta{font-size:10px;font-family:var(--font-mono);color:var(--color-text-faint);text-transform:uppercase;letter-spacing:.04em}
 
 /* === IDEA PREVIEW === */
-.idea-preview-card{min-width:170px;border:1px solid var(--color-border);background:var(--color-surface-offset);
-  padding:var(--space-3);cursor:pointer;flex-shrink:0;
+.idea-preview-card{border:1px solid var(--color-border);background:var(--color-surface-offset);
+  padding:var(--space-2) var(--space-3);cursor:pointer;display:flex;align-items:center;gap:8px;
   transition:border-color var(--transition-interactive),box-shadow var(--transition-interactive)}
 .idea-preview-card:hover{border-color:var(--color-primary);box-shadow:0 0 12px rgba(0,225,171,0.08)}
-.idea-preview-stage{font-size:10px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.idea-preview-stage{font-size:10px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
 .idea-preview-title{font-size:12px;font-weight:600;color:var(--color-text);font-family:var(--font-mono)}
 
 /* === BUTTONS === */
@@ -617,7 +617,7 @@ body.panel-drag-active .prw{pointer-events:none !important}
               <button class="btn btn-ghost btn-sm" onclick="navigate('ideas',document.querySelector('[data-view=ideas]'))"><i data-lucide="plus" style="width:12px;height:12px"></i></button>
             </div>
           </div>
-          <div class="panel-body"><div id="idea-lab-preview" style="display:flex;gap:var(--space-3);overflow-x:auto;padding-bottom:4px"></div></div>
+          <div class="panel-body"><div id="idea-lab-preview" style="display:flex;flex-direction:column;gap:4px;overflow-y:auto;height:100%"></div></div>
           <div class="prh" data-panel="panel-ideas"></div>
           <div class="prw" data-panel="panel-ideas"></div>
         </div>
@@ -969,7 +969,7 @@ function renderOpsBacklog() {
 function renderIdeaLabPreview() {
   var el = document.getElementById('idea-lab-preview');
   if (!el) return;
-  var preview = ideas.slice(0,6);
+  var preview = ideas;
   if (!preview.length) {
     el.innerHTML = '<div style="font-size:11px;color:var(--color-text-faint);font-family:var(--font-mono)">No ideas yet.</div>';
     return;
@@ -978,7 +978,7 @@ function renderIdeaLabPreview() {
   el.innerHTML = preview.map(function(i) {
     return '<div class="idea-preview-card">' +
       '<div class="idea-preview-stage" style="color:'+(stageColors[i.stage]||'var(--color-text-faint)')+'">'+i.stage+'</div>' +
-      '<div class="idea-preview-title">'+i.title+'</div>' +
+      '<div class="idea-preview-title" style="flex:1;margin:0">'+i.title+'</div>' +
       '</div>';
   }).join('');
 }
