@@ -869,7 +869,7 @@ select{appearance:none;cursor:pointer}
 </div>
 
 <script>
-const BUILD = '2026-05-30.15';
+const BUILD = '2026-05-30.16';
 
 // === STATE ===
 let tasks = [
@@ -1544,99 +1544,118 @@ function initResizableGrid() {
   var grid = document.getElementById('dash-grid');
   if (!grid || window.innerWidth <= 768) return;
 
-  // Parse computed px values from a grid element's template string
-  // Returns array of numbers, skipping divider entries (e.g. "6px" gaps)
-  function pxVals(el, prop) {
+  // Read computed pixel values for a grid template property
+  function snap(el, prop) {
     return getComputedStyle(el)[prop].split(' ').map(parseFloat);
   }
 
-  // Generic drag helper — prevents selection, restores cursor
-  function startDrag(el, onMove, onDone) {
-    el.addEventListener('mousedown', function(e) {
+  // Attach a drag to a handle element. onStart() returns ctx at drag-start.
+  // onDelta(ctx, dx, dy) is called on every mousemove.
+  function makeDraggable(handle, cur, onStart, onDelta, onEnd) {
+    handle.addEventListener('mousedown', function(e) {
       if (e.button !== 0) return;
       e.preventDefault();
+      e.stopPropagation();
       document.body.style.userSelect = 'none';
-      var origCursor = document.body.style.cursor;
-      document.body.style.cursor = getComputedStyle(el).cursor;
-      el.classList.add('dragging');
-      function move(e) { onMove(e); }
-      function up() {
-        el.classList.remove('dragging');
-        document.body.style.userSelect = '';
-        document.body.style.cursor = origCursor;
-        document.removeEventListener('mousemove', move);
-        document.removeEventListener('mouseup', up);
-        if (onDone) onDone();
+      document.body.style.cursor = cur;
+      handle.classList.add('dragging');
+      var x0 = e.clientX, y0 = e.clientY;
+      var ctx = onStart();
+      function onMove(e) {
+        onDelta(ctx, e.clientX - x0, e.clientY - y0);
       }
-      document.addEventListener('mousemove', move);
-      document.addEventListener('mouseup', up);
+      function onUp() {
+        handle.classList.remove('dragging');
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        if (onEnd) onEnd();
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
     });
   }
 
-  // ── Main grid columns (cdiv1 between cols 0/2, cdiv2 between cols 2/4) ──
+  // ── Main grid: restore saved column widths ──
   var savedCols = localStorage.getItem('scc_grid_cols');
   if (savedCols) grid.style.gridTemplateColumns = savedCols;
-
-  [['cdiv1', 0, 2], ['cdiv2', 2, 4]].forEach(function(cfg) {
-    var el = document.getElementById(cfg[0]);
-    var li = cfg[1], ri = cfg[2]; // left/right column index in pxVals array
-    if (!el) return;
-    startDrag(el, function(e) {
-      var cols = pxVals(grid, 'gridTemplateColumns');
-      // cols indices: 0=c0, 1=6px, 2=c2, 3=6px, 4=c4
-      var dx = e.movementX || 0;
-      cols[li] = Math.max(120, cols[li] + dx);
-      cols[ri] = Math.max(120, cols[ri] - dx);
-      grid.style.gridTemplateColumns = cols[0]+'px 6px '+cols[2]+'px 6px '+cols[4]+'px';
-    }, function() {
-      localStorage.setItem('scc_grid_cols', grid.style.gridTemplateColumns);
-    });
-  });
-
-  // ── Main grid row (rdiv-main between rows 0/2) ──
-  var rdivMain = document.getElementById('rdiv-main');
   var savedGridRows = localStorage.getItem('scc_grid_rows');
   if (savedGridRows) grid.style.gridTemplateRows = savedGridRows;
-  if (rdivMain) {
-    startDrag(rdivMain, function(e) {
-      var rows = pxVals(grid, 'gridTemplateRows');
-      rows[0] = Math.max(200, rows[0] + (e.movementY || 0));
-      grid.style.gridTemplateRows = rows[0]+'px 6px auto';
-    }, function() {
-      localStorage.setItem('scc_grid_rows', grid.style.gridTemplateRows);
-    });
+
+  // cdiv1: resize col 0 ↔ col 2 (indices in snap array: 0 and 2)
+  var cdiv1 = document.getElementById('cdiv1');
+  if (cdiv1) {
+    makeDraggable(cdiv1, 'col-resize',
+      function() { return snap(grid, 'gridTemplateColumns'); },
+      function(s, dx) {
+        var c0 = Math.max(120, s[0] + dx);
+        var c2 = Math.max(120, s[2] - dx);
+        grid.style.gridTemplateColumns = c0+'px 6px '+c2+'px 6px '+s[4]+'px';
+      },
+      function() { localStorage.setItem('scc_grid_cols', grid.style.gridTemplateColumns); }
+    );
   }
 
-  // ── Right panel rows (rdiv1 between dev-stream / ops-backlog) ──
+  // cdiv2: resize col 2 ↔ col 4
+  var cdiv2 = document.getElementById('cdiv2');
+  if (cdiv2) {
+    makeDraggable(cdiv2, 'col-resize',
+      function() { return snap(grid, 'gridTemplateColumns'); },
+      function(s, dx) {
+        var c2 = Math.max(120, s[2] + dx);
+        var c4 = Math.max(120, s[4] - dx);
+        grid.style.gridTemplateColumns = s[0]+'px 6px '+c2+'px 6px '+c4+'px';
+      },
+      function() { localStorage.setItem('scc_grid_cols', grid.style.gridTemplateColumns); }
+    );
+  }
+
+  // rdiv-main: resize main row height
+  var rdivMain = document.getElementById('rdiv-main');
+  if (rdivMain) {
+    makeDraggable(rdivMain, 'row-resize',
+      function() { return snap(grid, 'gridTemplateRows'); },
+      function(s, dx, dy) {
+        var r0 = Math.max(180, s[0] + dy);
+        grid.style.gridTemplateRows = r0+'px 6px auto';
+      },
+      function() { localStorage.setItem('scc_grid_rows', grid.style.gridTemplateRows); }
+    );
+  }
+
+  // rdiv1: resize dev-stream ↔ ops-backlog inside right panel
   var rightPanel = grid.querySelector('.dash-right');
   var rdiv1 = document.getElementById('rdiv1');
   var savedRRows = localStorage.getItem('scc_right_rows');
   if (savedRRows && rightPanel) rightPanel.style.gridTemplateRows = savedRRows;
   if (rightPanel && rdiv1) {
-    startDrag(rdiv1, function(e) {
-      var rows = pxVals(rightPanel, 'gridTemplateRows');
-      rows[0] = Math.max(80, rows[0] + (e.movementY || 0));
-      rows[2] = Math.max(80, rows[2] - (e.movementY || 0));
-      rightPanel.style.gridTemplateRows = rows[0]+'px 6px '+rows[2]+'px';
-    }, function() {
-      localStorage.setItem('scc_right_rows', rightPanel.style.gridTemplateRows);
-    });
+    makeDraggable(rdiv1, 'row-resize',
+      function() { return snap(rightPanel, 'gridTemplateRows'); },
+      function(s, dx, dy) {
+        var r0 = Math.max(80, s[0] + dy);
+        var r2 = Math.max(80, s[2] - dy);
+        rightPanel.style.gridTemplateRows = r0+'px 6px '+r2+'px';
+      },
+      function() { localStorage.setItem('scc_right_rows', rightPanel.style.gridTemplateRows); }
+    );
   }
 
-  // ── Bottom row columns (bdiv1 between idea-lab / quick-ops) ──
+  // bdiv1: resize idea-lab ↔ quick-ops inside bottom row
   var bottomRow = grid.querySelector('.dash-bottom');
   var bdiv1 = document.getElementById('bdiv1');
   var savedBCols = localStorage.getItem('scc_bottom_cols');
   if (savedBCols && bottomRow) bottomRow.style.gridTemplateColumns = savedBCols;
   if (bottomRow && bdiv1) {
-    startDrag(bdiv1, function(e) {
-      var cols = pxVals(bottomRow, 'gridTemplateColumns');
-      cols[0] = Math.max(150, cols[0] + (e.movementX || 0));
-      cols[2] = Math.max(150, cols[2] - (e.movementX || 0));
-      bottomRow.style.gridTemplateColumns = cols[0]+'px 6px '+cols[2]+'px';
-    }, function() {
-      localStorage.setItem('scc_bottom_cols', bottomRow.style.gridTemplateColumns);
-    });
+    makeDraggable(bdiv1, 'col-resize',
+      function() { return snap(bottomRow, 'gridTemplateColumns'); },
+      function(s, dx) {
+        var c0 = Math.max(150, s[0] + dx);
+        var c2 = Math.max(150, s[2] - dx);
+        bottomRow.style.gridTemplateColumns = c0+'px 6px '+c2+'px';
+      },
+      function() { localStorage.setItem('scc_bottom_cols', bottomRow.style.gridTemplateColumns); }
+    );
   }
 }
 
